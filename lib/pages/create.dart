@@ -95,8 +95,7 @@ class _CreatePageState extends State<CreatePage> {
                           height: 30,
                         ),
                         Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 16.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: SizedBox(
                             width: MediaQuery.of(context).size.width *
                                 0.8, // ปรับขนาดตามหน้าจอ
@@ -107,7 +106,7 @@ class _CreatePageState extends State<CreatePage> {
                                   child: TextField(
                                     onChanged: (value) => name =
                                         value, // เก็บค่าที่กรอกในตัวแปร username
-                
+
                                     decoration: InputDecoration(
                                       labelText:
                                           "Product Name", // ข้อความ "Username" ภายใน TextField
@@ -132,8 +131,8 @@ class _CreatePageState extends State<CreatePage> {
                                         borderRadius:
                                             BorderRadius.circular(30.0),
                                         borderSide: BorderSide(
-                                          color: Colors
-                                              .white, // สีขอบเมื่อ focus
+                                          color:
+                                              Colors.white, // สีขอบเมื่อ focus
                                         ),
                                       ),
                                     ),
@@ -150,8 +149,7 @@ class _CreatePageState extends State<CreatePage> {
                           height: 15,
                         ),
                         Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 16.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: SizedBox(
                             width: MediaQuery.of(context).size.width *
                                 0.8, // ปรับขนาดตามหน้าจอ
@@ -162,7 +160,7 @@ class _CreatePageState extends State<CreatePage> {
                                   child: TextField(
                                     onChanged: (value) => detail =
                                         value, // เก็บค่าที่กรอกในตัวแปร phone
-                
+
                                     decoration: InputDecoration(
                                       labelText:
                                           "Product details", // ข้อความ "Phone Number" ภายใน TextField
@@ -187,8 +185,8 @@ class _CreatePageState extends State<CreatePage> {
                                         borderRadius:
                                             BorderRadius.circular(30.0),
                                         borderSide: BorderSide(
-                                          color: Colors
-                                              .white, // สีขอบเมื่อ focus
+                                          color:
+                                              Colors.white, // สีขอบเมื่อ focus
                                         ),
                                       ),
                                     ),
@@ -205,8 +203,7 @@ class _CreatePageState extends State<CreatePage> {
                           height: 20,
                         ),
                         Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 16.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: SizedBox(
                             width: MediaQuery.of(context).size.width *
                                 0.8, // ปรับขนาดตามหน้าจอ
@@ -297,8 +294,7 @@ class _CreatePageState extends State<CreatePage> {
                                                   ' $selectedUserName',
                                                   style: TextStyle(
                                                     fontSize: 18,
-                                                    fontWeight:
-                                                        FontWeight.bold,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
                                                 )
                                               : Text(
@@ -332,7 +328,7 @@ class _CreatePageState extends State<CreatePage> {
                                   log('Prduct: $name');
                                   log('Prduct: $phoneBook');
                                   log('Username: $selectedUserName'); // Log ค่า index
-                
+
                                   Get.to(() => const SenderPage());
                                 },
                                 child: Container(
@@ -346,8 +342,7 @@ class _CreatePageState extends State<CreatePage> {
                                       ], // ไล่เฉดสีจากส้มเข้มไปอ่อน
                                       begin: Alignment
                                           .centerLeft, // เริ่มไล่จากซ้าย
-                                      end:
-                                          Alignment.centerRight, // ไปจบที่ขวา
+                                      end: Alignment.centerRight, // ไปจบที่ขวา
                                     ),
                                     boxShadow: [
                                       BoxShadow(
@@ -355,14 +350,13 @@ class _CreatePageState extends State<CreatePage> {
                                             .withOpacity(0.5), // สีเงา
                                         spreadRadius: 2, // การกระจายของเงา
                                         blurRadius: 5, // ความเบลอของเงา
-                                        offset:
-                                            Offset(2, 4), // ระยะห่างของเงา
+                                        offset: Offset(2, 4), // ระยะห่างของเงา
                                       ),
                                     ],
                                   ),
                                   child: Center(
                                     child: Text(
-                                      "Create Order",
+                                      "Confirm",
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 20,

@@ -23,20 +23,27 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData.dark().copyWith(
-         textTheme: GoogleFonts.promptTextTheme(Theme.of(context).textTheme.copyWith(
-           bodyLarge: TextStyle(color: Colors.white), // เปลี่ยน bodyText1 เป็น bodyLarge
-          bodyMedium: TextStyle(color: Colors.white), // เปลี่ยน bodyText2 เป็น bodyMedium
-          displayLarge: TextStyle(color: Colors.white), // เปลี่ยน headline1 เป็น displayLarge
-          displayMedium: TextStyle(color: Colors.white), // เปลี่ยน headline2 เป็น displayMedium
-          // เพิ่มเติมตามความต้องการของคุณ
-        ),), // ใช้ฟอนต์ Roboto
+        textTheme: GoogleFonts.promptTextTheme(
+          Theme.of(context).textTheme.copyWith(
+                bodyLarge: TextStyle(
+                    color: Colors.white), // เปลี่ยน bodyText1 เป็น bodyLarge
+                bodyMedium: TextStyle(
+                    color: Colors.white), // เปลี่ยน bodyText2 เป็น bodyMedium
+                displayLarge: TextStyle(
+                    color: Colors.white), // เปลี่ยน headline1 เป็น displayLarge
+                displayMedium: TextStyle(
+                    color:
+                        Colors.white), // เปลี่ยน headline2 เป็น displayMedium
+                // เพิ่มเติมตามความต้องการของคุณ
+              ),
+        ), // ใช้ฟอนต์ Roboto
         bottomNavigationBarTheme: BottomNavigationBarTheme.of(context).copyWith(
           unselectedItemColor: Colors.white,
           selectedItemColor: Colors.white,
           backgroundColor: Colors.black,
         ),
       ),
-      home: CreatePage(),
+      home: LoginPage(),
     );
   }
 }

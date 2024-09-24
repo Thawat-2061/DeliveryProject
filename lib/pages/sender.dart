@@ -65,7 +65,8 @@ class _SenderPageState extends State<SenderPage> {
                   child: Card(
                     color: Color.fromARGB(212, 23, 23, 22), // พื้นหลังเป็นสีดำ
                     shape: RoundedRectangleBorder(
-                      side: BorderSide(color: Colors.white, width: 2), // ขอบสีขาว
+                      side:
+                          BorderSide(color: Colors.white, width: 2), // ขอบสีขาว
                       borderRadius: BorderRadius.circular(20), // รัศมีขอบที่มน
                     ),
                     child: Row(
@@ -89,7 +90,7 @@ class _SenderPageState extends State<SenderPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(top: 5, left: 30),
+                      padding: const EdgeInsets.only(top: 5, left: 10),
                       child: Row(
                         children: [
                           FilledButton(
@@ -115,7 +116,8 @@ class _SenderPageState extends State<SenderPage> {
                                 Text(
                                   "Create Order",
                                   style: TextStyle(
-                                    color: Colors.white, // สีตัวหนังสือเป็นสีขาว
+                                    color:
+                                        Colors.white, // สีตัวหนังสือเป็นสีขาว
                                   ),
                                 ),
                               ],
@@ -125,7 +127,7 @@ class _SenderPageState extends State<SenderPage> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 5, right: 30),
+                      padding: const EdgeInsets.only(top: 5, right: 10),
                       child: Row(
                         children: [
                           FilledButton(
@@ -150,7 +152,8 @@ class _SenderPageState extends State<SenderPage> {
                                 Text(
                                   "Find Order",
                                   style: TextStyle(
-                                    color: Colors.white, // สีตัวหนังสือเป็นสีขาว
+                                    color:
+                                        Colors.white, // สีตัวหนังสือเป็นสีขาว
                                   ),
                                 ),
                               ],
@@ -179,8 +182,8 @@ class _SenderPageState extends State<SenderPage> {
                                       child: Row(
                                         children: [
                                           Text('Order',
-                                              style:
-                                                  TextStyle(color: Colors.white)),
+                                              style: TextStyle(
+                                                  color: Colors.white)),
                                           Icon(
                                             Icons.info,
                                             size: 20,
@@ -194,7 +197,8 @@ class _SenderPageState extends State<SenderPage> {
                                   label: Expanded(
                                     child: Center(
                                       child: Text('Status',
-                                          style: TextStyle(color: Colors.white)),
+                                          style:
+                                              TextStyle(color: Colors.white)),
                                     ),
                                   ),
                                 ),
@@ -202,7 +206,8 @@ class _SenderPageState extends State<SenderPage> {
                                   label: Expanded(
                                     child: Center(
                                       child: Text('Customer',
-                                          style: TextStyle(color: Colors.white)),
+                                          style:
+                                              TextStyle(color: Colors.white)),
                                     ),
                                   ),
                                 ),
@@ -210,7 +215,8 @@ class _SenderPageState extends State<SenderPage> {
                                   label: Expanded(
                                     child: Center(
                                       child: Text('Tel.',
-                                          style: TextStyle(color: Colors.white)),
+                                          style:
+                                              TextStyle(color: Colors.white)),
                                     ),
                                   ),
                                 ),
@@ -218,7 +224,8 @@ class _SenderPageState extends State<SenderPage> {
                                   label: Expanded(
                                     child: Center(
                                       child: Text('Imge',
-                                          style: TextStyle(color: Colors.white)),
+                                          style:
+                                              TextStyle(color: Colors.white)),
                                     ),
                                   ),
                                 ),
@@ -243,7 +250,8 @@ class _SenderPageState extends State<SenderPage> {
                                                     mainAxisSize:
                                                         MainAxisSize.min,
                                                     children: [
-                                                      Text('ชื่อ: Barret M82A1'),
+                                                      Text(
+                                                          'ชื่อ: Barret M82A1'),
                                                       Text(
                                                           'รายละเอียด: ...'), // เพิ่มรายละเอียดที่ต้องการแสดง
                                                       // สามารถเพิ่ม Text widget อื่น ๆ ได้ตามต้องการ
@@ -279,8 +287,9 @@ class _SenderPageState extends State<SenderPage> {
                                             decoration: BoxDecoration(
                                               color: Color(
                                                   0xFFD67A33), // สีพื้นหลังปุ่ม
-                                              borderRadius: BorderRadius.circular(
-                                                  20), // ทำให้มุมปุ่มโค้งมน
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      20), // ทำให้มุมปุ่มโค้งมน
                                             ),
                                             child: const Text(
                                               'กำลังส่งสินค้า',
@@ -343,7 +352,8 @@ class _SenderPageState extends State<SenderPage> {
                                                     mainAxisSize:
                                                         MainAxisSize.min,
                                                     children: [
-                                                      Text('ชื่อ: Barret M82A1'),
+                                                      Text(
+                                                          'ชื่อ: Barret M82A1'),
                                                       Text(
                                                           'รายละเอียด: ...'), // เพิ่มรายละเอียดที่ต้องการแสดง
                                                       // สามารถเพิ่ม Text widget อื่น ๆ ได้ตามต้องการ
@@ -377,10 +387,11 @@ class _SenderPageState extends State<SenderPage> {
                                                 vertical:
                                                     8), // กำหนดขนาด padding ให้ปุ่ม
                                             decoration: BoxDecoration(
-                                              color: Color.fromARGB(255, 84, 254,
-                                                  95), // สีพื้นหลังปุ่ม
-                                              borderRadius: BorderRadius.circular(
-                                                  20), // ทำให้มุมปุ่มโค้งมน
+                                              color: Color.fromARGB(255, 84,
+                                                  254, 95), // สีพื้นหลังปุ่ม
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      20), // ทำให้มุมปุ่มโค้งมน
                                             ),
                                             child: Text(
                                               'ส่งสินค้าสำเร็จ',

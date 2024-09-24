@@ -7,6 +7,7 @@ import 'package:get/get_navigation/get_navigation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rider/pages/login.dart';
 import 'package:toggle_switch/toggle_switch.dart';
+import 'package:geolocator/geolocator.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -128,10 +129,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                           color: Colors.black
                                               .withOpacity(0.8), // สีเงา
                                           blurRadius: 5.0, // ความเบลอของเงา
-                                          spreadRadius:
-                                              0.2, // ความกว้างของเงา
-                                          offset: Offset(1,
-                                              3), // การเลื่อนเงาในแนวแกน Y
+                                          spreadRadius: 0.2, // ความกว้างของเงา
+                                          offset: Offset(
+                                              1, 3), // การเลื่อนเงาในแนวแกน Y
                                         ),
                                       ],
                                     ),
@@ -142,7 +142,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       inactiveBgColor: Colors.grey,
                                       inactiveFgColor: Colors.white,
                                       initialLabelIndex: _fillIndex,
-                                            
+
                                       totalSwitches: 2,
                                       labels: ['User', 'Rider'],
                                       customTextStyles: [
@@ -150,15 +150,13 @@ class _RegisterPageState extends State<RegisterPage> {
                                           fontSize: 16,
                                           fontWeight: FontWeight
                                               .bold, // ตัวหนาสำหรับ 'User'
-                                          color:
-                                              Colors.white, // สีของข้อความ
+                                          color: Colors.white, // สีของข้อความ
                                         ),
                                         TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight
                                               .bold, // ตัวหนาสำหรับ 'Rider'
-                                          color:
-                                              Colors.white, // สีของข้อความ
+                                          color: Colors.white, // สีของข้อความ
                                         ),
                                       ],
                                       radiusStyle: true,
@@ -213,7 +211,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                         child: TextField(
                                           onChanged: (value) => username =
                                               value, // เก็บค่าที่กรอกในตัวแปร username
-                                            
+
                                           decoration: InputDecoration(
                                             labelText:
                                                 "Username", // ข้อความ "Username" ภายใน TextField
@@ -224,24 +222,19 @@ class _RegisterPageState extends State<RegisterPage> {
                                             prefixIcon: Icon(
                                               Icons
                                                   .person, // เพิ่มไอคอนสำหรับ Username
-                                              color: Colors
-                                                  .white, // สีของไอคอน
+                                              color: Colors.white, // สีของไอคอน
                                             ),
-                                            enabledBorder:
-                                                OutlineInputBorder(
+                                            enabledBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      30.0),
+                                                  BorderRadius.circular(30.0),
                                               borderSide: BorderSide(
                                                 color: Colors
                                                     .white, // สีขอบเมื่อไม่ focus
                                               ),
                                             ),
-                                            focusedBorder:
-                                                OutlineInputBorder(
+                                            focusedBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      30.0),
+                                                  BorderRadius.circular(30.0),
                                               borderSide: BorderSide(
                                                 color: Colors
                                                     .white, // สีขอบเมื่อ focus
@@ -273,7 +266,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                         child: TextField(
                                           onChanged: (value) => phone =
                                               value, // เก็บค่าที่กรอกในตัวแปร phone
-                                            
+
                                           decoration: InputDecoration(
                                             labelText:
                                                 "Phone Number", // ข้อความ "Phone Number" ภายใน TextField
@@ -284,24 +277,19 @@ class _RegisterPageState extends State<RegisterPage> {
                                             prefixIcon: Icon(
                                               Icons
                                                   .phone, // เพิ่มไอคอนสำหรับ Phone Number
-                                              color: Colors
-                                                  .white, // สีของไอคอน
+                                              color: Colors.white, // สีของไอคอน
                                             ),
-                                            enabledBorder:
-                                                OutlineInputBorder(
+                                            enabledBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      30.0),
+                                                  BorderRadius.circular(30.0),
                                               borderSide: BorderSide(
                                                 color: Colors
                                                     .white, // สีขอบเมื่อไม่ focus
                                               ),
                                             ),
-                                            focusedBorder:
-                                                OutlineInputBorder(
+                                            focusedBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      30.0),
+                                                  BorderRadius.circular(30.0),
                                               borderSide: BorderSide(
                                                 color: Colors
                                                     .white, // สีขอบเมื่อ focus
@@ -338,7 +326,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                               child: TextField(
                                                 onChanged: (value) => address =
                                                     value, // เก็บค่าที่กรอกในตัวแปร address
-                                            
+
                                                 decoration: InputDecoration(
                                                   labelText:
                                                       "Your Address", // ข้อความ "Your Address" ภายใน TextField
@@ -355,8 +343,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderRadius:
-                                                        BorderRadius
-                                                            .circular(30.0),
+                                                        BorderRadius.circular(
+                                                            30.0),
                                                     borderSide: BorderSide(
                                                       color: Colors
                                                           .white, // สีขอบเมื่อไม่ focus
@@ -365,8 +353,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                                   focusedBorder:
                                                       OutlineInputBorder(
                                                     borderRadius:
-                                                        BorderRadius
-                                                            .circular(30.0),
+                                                        BorderRadius.circular(
+                                                            30.0),
                                                     borderSide: BorderSide(
                                                       color: Colors
                                                           .white, // สีขอบเมื่อ focus
@@ -391,7 +379,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                               child: TextField(
                                                 onChanged: (value) => carreg =
                                                     value, // เก็บค่าที่กรอกในตัวแปร carreg
-                                            
+
                                                 decoration: InputDecoration(
                                                   labelText:
                                                       "Car Registration", // ข้อความ "Car Registration" ภายใน TextField
@@ -408,8 +396,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                                   enabledBorder:
                                                       OutlineInputBorder(
                                                     borderRadius:
-                                                        BorderRadius
-                                                            .circular(30.0),
+                                                        BorderRadius.circular(
+                                                            30.0),
                                                     borderSide: BorderSide(
                                                       color: Colors
                                                           .white, // สีขอบเมื่อไม่ focus
@@ -418,8 +406,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                                   focusedBorder:
                                                       OutlineInputBorder(
                                                     borderRadius:
-                                                        BorderRadius
-                                                            .circular(30.0),
+                                                        BorderRadius.circular(
+                                                            30.0),
                                                     borderSide: BorderSide(
                                                       color: Colors
                                                           .white, // สีขอบเมื่อ focus
@@ -455,7 +443,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                         child: TextField(
                                           onChanged: (value) => email =
                                               value, // เก็บค่าที่กรอกในตัวแปร email
-                                            
+
                                           decoration: InputDecoration(
                                             labelText:
                                                 "Email", // ข้อความ "Email" ภายใน TextField
@@ -464,26 +452,20 @@ class _RegisterPageState extends State<RegisterPage> {
                                                   .white, // สีของข้อความ "Email"
                                             ),
                                             prefixIcon: Icon(
-                                              Icons
-                                                  .email, // เพิ่มไอคอนอีเมล
-                                              color: Colors
-                                                  .white, // สีของไอคอน
+                                              Icons.email, // เพิ่มไอคอนอีเมล
+                                              color: Colors.white, // สีของไอคอน
                                             ),
-                                            enabledBorder:
-                                                OutlineInputBorder(
+                                            enabledBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      30.0),
+                                                  BorderRadius.circular(30.0),
                                               borderSide: BorderSide(
                                                 color: Colors
                                                     .white, // สีขอบเมื่อไม่ focus
                                               ),
                                             ),
-                                            focusedBorder:
-                                                OutlineInputBorder(
+                                            focusedBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      30.0),
+                                                  BorderRadius.circular(30.0),
                                               borderSide: BorderSide(
                                                 color: Colors
                                                     .white, // สีขอบเมื่อ focus
@@ -525,26 +507,20 @@ class _RegisterPageState extends State<RegisterPage> {
                                                   .white, // สีของข้อความ "Password"
                                             ),
                                             prefixIcon: Icon(
-                                              Icons
-                                                  .lock, // เพิ่มไอคอนแม่กุญแจ
-                                              color: Colors
-                                                  .white, // สีของไอคอน
+                                              Icons.lock, // เพิ่มไอคอนแม่กุญแจ
+                                              color: Colors.white, // สีของไอคอน
                                             ),
-                                            enabledBorder:
-                                                OutlineInputBorder(
+                                            enabledBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      30.0),
+                                                  BorderRadius.circular(30.0),
                                               borderSide: BorderSide(
                                                 color: Colors
                                                     .white, // สีขอบเมื่อไม่ focus
                                               ),
                                             ),
-                                            focusedBorder:
-                                                OutlineInputBorder(
+                                            focusedBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      30.0),
+                                                  BorderRadius.circular(30.0),
                                               borderSide: BorderSide(
                                                 color: Colors
                                                     .white, // สีขอบเมื่อ focus
@@ -586,26 +562,20 @@ class _RegisterPageState extends State<RegisterPage> {
                                                   .white, // สีของข้อความ "Confirm Password"
                                             ),
                                             prefixIcon: Icon(
-                                              Icons
-                                                  .lock, // เพิ่มไอคอนแม่กุญแจ
-                                              color: Colors
-                                                  .white, // สีของไอคอน
+                                              Icons.lock, // เพิ่มไอคอนแม่กุญแจ
+                                              color: Colors.white, // สีของไอคอน
                                             ),
-                                            enabledBorder:
-                                                OutlineInputBorder(
+                                            enabledBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      30.0),
+                                                  BorderRadius.circular(30.0),
                                               borderSide: BorderSide(
                                                 color: Colors
                                                     .white, // สีขอบเมื่อไม่ focus
                                               ),
                                             ),
-                                            focusedBorder:
-                                                OutlineInputBorder(
+                                            focusedBorder: OutlineInputBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      30.0),
+                                                  BorderRadius.circular(30.0),
                                               borderSide: BorderSide(
                                                 color: Colors
                                                     .white, // สีขอบเมื่อ focus
@@ -665,7 +635,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                         ),
                                         child: Center(
                                           child: Text(
-                                            "LOGIN",
+                                            "Back",
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 20,
@@ -698,8 +668,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                         log('pass: $pass');
                                         log('compass: $compass');
                                         log('Selected Index: $selectedIndex'); // Log ค่า index
-                  
-                                        Get.to(() => const LoginPage());
+
+                                        Register();
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(
@@ -707,10 +677,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                               50.0), // มุมโค้งของปุ่ม
                                           gradient: LinearGradient(
                                             colors: [
-                                              Color.fromARGB(
-                                                  255, 214, 78, 51),
-                                              Color.fromARGB(
-                                                  255, 233, 200, 93)
+                                              Color.fromARGB(255, 214, 78, 51),
+                                              Color.fromARGB(255, 233, 200, 93)
                                             ], // ไล่เฉดสีจากส้มเข้มไปอ่อน
                                             begin: Alignment
                                                 .centerLeft, // เริ่มไล่จากซ้าย
@@ -731,7 +699,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                         ),
                                         child: Center(
                                           child: Text(
-                                            "REGISTER",
+                                            "Confirm",
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 20,
@@ -755,5 +723,48 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           )),
     );
+  }
+
+  void Register() async {
+    var postion = await _determinePosition();
+    log('${postion.latitude} ${postion.longitude}');
+    log('${postion}');
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
   }
 }
