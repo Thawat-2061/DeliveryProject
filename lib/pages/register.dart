@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -5,9 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:rider/config/config.dart';
+import 'package:rider/model/request/RegisterModel.dart';
 import 'package:rider/pages/login.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:another_flushbar/flushbar.dart';
+import 'package:http/http.dart' as http;
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -17,6 +22,16 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  TextEditingController usernameCtl = TextEditingController();
+  TextEditingController phoneCtl = TextEditingController();
+  TextEditingController addressCtl = TextEditingController();
+  TextEditingController carregCtl = TextEditingController();
+  TextEditingController emailCtl = TextEditingController();
+  TextEditingController passCtl = TextEditingController();
+  TextEditingController conpassCtl = TextEditingController();
+
+  String url = '';
+
   String username = '';
   String phone = '';
   String address = '';
@@ -28,6 +43,23 @@ class _RegisterPageState extends State<RegisterPage> {
   int _fillIndex = 0; // กำหนดค่าเริ่มต้น
   final ImagePicker picker = ImagePicker();
   XFile? image; // ตัวแปรเพื่อเก็บภาพที่เลือก
+
+  @override
+  void initState() {
+    super.initState();
+    //Configguration config = Configguration();
+
+    Configguration.getConfig().then(
+      (value) {
+        log(value['apiEndpoint']);
+        setState(() {
+          url = value['apiEndpoint'];
+        });
+      },
+    ).catchError((err) {
+      log(err.toString());
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -209,8 +241,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                       SizedBox(
                                         height: 50,
                                         child: TextField(
-                                          onChanged: (value) => username =
-                                              value, // เก็บค่าที่กรอกในตัวแปร username
+                                          controller:
+                                              usernameCtl, // เก็บค่าที่กรอกในตัวแปร username
+                                          keyboardType: TextInputType.name,
 
                                           decoration: InputDecoration(
                                             labelText:
@@ -264,8 +297,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                       SizedBox(
                                         height: 50,
                                         child: TextField(
-                                          onChanged: (value) => phone =
-                                              value, // เก็บค่าที่กรอกในตัวแปร phone
+                                          controller:
+                                              phoneCtl, // เก็บค่าที่กรอกในตัวแปร phone
+                                          keyboardType: TextInputType.phone,
 
                                           decoration: InputDecoration(
                                             labelText:
@@ -324,8 +358,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                             SizedBox(
                                               height: 50,
                                               child: TextField(
-                                                onChanged: (value) => address =
-                                                    value, // เก็บค่าที่กรอกในตัวแปร address
+                                                controller:
+                                                    addressCtl, // เก็บค่าที่กรอกในตัวแปร address
+                                                keyboardType:
+                                                    TextInputType.streetAddress,
 
                                                 decoration: InputDecoration(
                                                   labelText:
@@ -377,8 +413,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                             SizedBox(
                                               height: 50,
                                               child: TextField(
-                                                onChanged: (value) => carreg =
-                                                    value, // เก็บค่าที่กรอกในตัวแปร carreg
+                                                controller:
+                                                    carregCtl, // เก็บค่าที่กรอกในตัวแปร carreg
+                                                keyboardType:
+                                                    TextInputType.text,
 
                                                 decoration: InputDecoration(
                                                   labelText:
@@ -441,8 +479,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                       SizedBox(
                                         height: 50,
                                         child: TextField(
-                                          onChanged: (value) => email =
-                                              value, // เก็บค่าที่กรอกในตัวแปร email
+                                          controller:
+                                              emailCtl, // เก็บค่าที่กรอกในตัวแปร email
+                                          keyboardType:
+                                              TextInputType.emailAddress,
 
                                           decoration: InputDecoration(
                                             labelText:
@@ -495,8 +535,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                       SizedBox(
                                         height: 50,
                                         child: TextField(
-                                          onChanged: (value) => pass =
-                                              value, // เก็บค่าที่กรอกในตัวแปร pass
+                                          controller:
+                                              passCtl, // เก็บค่าที่กรอกในตัวแปร pass
+                                          keyboardType:
+                                              TextInputType.visiblePassword,
                                           obscureText:
                                               true, // ซ่อนข้อความที่กรอก
                                           decoration: InputDecoration(
@@ -550,8 +592,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                       SizedBox(
                                         height: 50,
                                         child: TextField(
-                                          onChanged: (value) => compass =
-                                              value, // เก็บค่าที่กรอกในตัวแปร compass
+                                          controller:
+                                              conpassCtl, // เก็บค่าที่กรอกในตัวแปร compass
+                                          keyboardType:
+                                              TextInputType.visiblePassword,
                                           obscureText:
                                               true, // ซ่อนข้อความที่กรอก
                                           decoration: InputDecoration(
@@ -659,17 +703,25 @@ class _RegisterPageState extends State<RegisterPage> {
                                     height: 50,
                                     child: GestureDetector(
                                       onTap: () {
-                                        log('---------------------------------------');
-                                        log('Username: $username');
-                                        log('Phone: $phone');
-                                        log('Address: $address');
-                                        log('Car Registration: $carreg');
-                                        log('Email: $email');
-                                        log('pass: $pass');
-                                        log('compass: $compass');
-                                        log('Selected Index: $selectedIndex'); // Log ค่า index
-
-                                        Register();
+                                        if (_fillIndex == 0) {
+                                          RegisterUser(
+                                              context,
+                                              usernameCtl,
+                                              emailCtl,
+                                              phoneCtl,
+                                              addressCtl,
+                                              passCtl,
+                                              conpassCtl);
+                                        } else {
+                                          RegisterRider(
+                                              context,
+                                              usernameCtl,
+                                              emailCtl,
+                                              phoneCtl,
+                                              carregCtl,
+                                              passCtl,
+                                              conpassCtl);
+                                        }
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(
@@ -725,10 +777,110 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  void Register() async {
-    var postion = await _determinePosition();
-    log('${postion.latitude} ${postion.longitude}');
-    log('${postion}');
+  void RegisterUser(
+      BuildContext context,
+      TextEditingController usernameCtl,
+      TextEditingController emailCtl,
+      TextEditingController phoneCtl,
+      TextEditingController addressCtl,
+      TextEditingController passCtl,
+      TextEditingController conpassCtl) async {
+    var position = await _determinePosition();
+    log("User Position: ${position.latitude}, ${position.longitude}");
+    log(usernameCtl.text);
+    log(emailCtl.text);
+    log(passCtl.text);
+    log(phoneCtl.text);
+    log(addressCtl.text);
+
+    // Validate if all fields are filled
+    if (usernameCtl.text.isEmpty ||
+        phoneCtl.text.isEmpty ||
+        addressCtl.text.isEmpty ||
+        emailCtl.text.isEmpty ||
+        passCtl.text.isEmpty ||
+        conpassCtl.text.isEmpty) {
+      log('Please fill all the fields');
+      _showFlushbar(
+          context, 'กรุณากรอกข้อมูลให้ครบ', 'Please fill all the fields');
+      return;
+    }
+
+    // Validate passwords match
+    if (passCtl.text != conpassCtl.text) {
+      log('Passwords do not match');
+      _showFlushbar(context, 'รหัสผ่านไม่ตรงกัน', 'Passwords do not match');
+      return;
+    }
+
+    // Prepare the user registration model
+    UserRegisterModel req = UserRegisterModel(
+      username: usernameCtl.text,
+      email: emailCtl.text,
+      password: passCtl.text,
+      phone: phoneCtl.text,
+      image:
+          "https://i.pinimg.com/736x/0d/b5/da/0db5da143c7bf4ace9d3635bd4e35fcc.jpg", // Placeholder image
+      address: addressCtl.text,
+      gpsLatitude: position.latitude,
+      gpsLongitude: position.longitude,
+    );
+
+    // Show a progress indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+
+    try {
+      var response = await http.post(
+        Uri.parse("$url/register/user"),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(req.toJson()),
+      );
+
+      // Dismiss progress indicator
+      Navigator.of(context).pop();
+
+      // Handle different response statuses
+      if (response.statusCode == 201) {
+        log('Registration successful');
+        _showFlushbar(
+          context,
+          'สมัครสมาชิคสำเร็จ!!!',
+          'Registration Successful!',
+          onOkPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            );
+          },
+        );
+      } else if (response.statusCode == 400) {
+        log('Invalid input or missing fields');
+        _showFlushbar(
+            context, 'ข้อมูลไม่ถูกต้อง', 'Invalid input or missing fields');
+      } else if (response.statusCode == 409) {
+        log('Username already exists');
+        _showFlushbar(
+            context, 'ชื่อผู้ใช้นี้มีอยู่แล้ว', 'Username already exists');
+      } else {
+        log('Registration failed');
+        log('Response: ${response.body}');
+        _showFlushbar(context, 'การลงทะเบียนล้มเหลว', 'Registration failed');
+      }
+    } catch (e) {
+      // Dismiss progress indicator
+      Navigator.of(context).pop();
+      log('Error: $e');
+      _showFlushbar(
+          context, 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์', 'Error: $e');
+    }
   }
 
   Future<Position> _determinePosition() async {
@@ -767,4 +919,65 @@ class _RegisterPageState extends State<RegisterPage> {
     // continue accessing the position of the device.
     return await Geolocator.getCurrentPosition();
   }
+
+  void RegisterRider(
+      BuildContext context,
+      TextEditingController usernameCtl,
+      TextEditingController emailCtl,
+      TextEditingController phoneCtl,
+      TextEditingController carregCtl,
+      TextEditingController passCtl,
+      TextEditingController conpassCtl) {
+    if (usernameCtl.text.isEmpty ||
+        phoneCtl.text.isEmpty ||
+        carregCtl.text.isEmpty ||
+        emailCtl.text.isEmpty ||
+        passCtl.text.isEmpty ||
+        conpassCtl.text.isEmpty) {
+      log('Please fill all the fields');
+      _showFlushbar(
+          context, 'กรุณากรอกข้อมูลให้ครบ', 'Please fill all the fields');
+      return;
+    }
+
+    if (passCtl.text != conpassCtl.text) {
+      log('Passwords do not match');
+      _showFlushbar(context, 'รหัสผ่านไม่ตรงกัน', 'Passwords do not match');
+      return;
+    }
+    log("Rider");
+  }
+}
+
+void _showFlushbar(BuildContext context, String title, String message,
+    {VoidCallback? onOkPressed}) {
+  Flushbar(
+    title: title,
+    message: message,
+    backgroundGradient: const LinearGradient(
+      colors: [
+        Color.fromARGB(255, 124, 209, 145),
+        Color.fromARGB(255, 4, 169, 152)
+      ],
+    ),
+    backgroundColor: Colors.red,
+    boxShadows: const [
+      BoxShadow(
+          color: Color.fromRGBO(25, 105, 196, 1),
+          offset: Offset(0.0, 2.0),
+          blurRadius: 5.0)
+    ],
+    duration: const Duration(seconds: 3),
+    flushbarPosition: FlushbarPosition.TOP,
+    margin: const EdgeInsets.all(8.0),
+    icon: const Icon(
+      Icons.info_outline,
+      color: Colors.white,
+      size: 28.0,
+    ),
+  ).show(context).then((_) {
+    if (onOkPressed != null) {
+      onOkPressed();
+    }
+  });
 }

@@ -40,6 +40,7 @@ dependencies:
   toggle_switch: ^2.3.0
   get: ^4.6.6
   geolocator: ^13.0.1
+  another_flushbar: ^1.12.30
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +67,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/config/
   #   - images/a_dot_burr.jpeg
 
 

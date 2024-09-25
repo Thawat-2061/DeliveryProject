@@ -165,6 +165,7 @@ class _SenderPageState extends State<SenderPage> {
                   ],
                 ),
                 SizedBox(
+                  width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height * 0.65,
                   child: Card(
                     child: SizedBox(
