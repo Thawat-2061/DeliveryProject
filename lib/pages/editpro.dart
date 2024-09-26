@@ -52,12 +52,10 @@ class _EditproPageState extends State<EditproPage> {
     return Scaffold(
       appBar: AppBar(),
       body: Center(
-        child: SingleChildScrollView(
+        child: Expanded(
           child: Column(
             children: [
-              Container(
-                height: MediaQuery.of(context).size.height *
-                    0.7, // ปรับความกว้างตามขนาดหน้าจอ
+              Expanded(
                 child: Column(
                   children: [
                     GestureDetector(
@@ -143,7 +141,7 @@ class _EditproPageState extends State<EditproPage> {
                               child: TextField(
                                 onChanged: (value) => username =
                                     value, // เก็บค่าที่กรอกในตัวแปร username
-
+                
                                 decoration: InputDecoration(
                                   labelText:
                                       "Username", // ข้อความ "Username" ภายใน TextField
@@ -192,7 +190,7 @@ class _EditproPageState extends State<EditproPage> {
                               child: TextField(
                                 onChanged: (value) => phone =
                                     value, // เก็บค่าที่กรอกในตัวแปร phone
-
+                
                                 decoration: InputDecoration(
                                   labelText:
                                       "Phone Number", // ข้อความ "Phone Number" ภายใน TextField
@@ -242,7 +240,7 @@ class _EditproPageState extends State<EditproPage> {
                               child: TextField(
                                 onChanged: (value) => email =
                                     value, // เก็บค่าที่กรอกในตัวแปร email
-
+                
                                 decoration: InputDecoration(
                                   labelText:
                                       "Email", // ข้อความ "Email" ภายใน TextField
@@ -290,7 +288,7 @@ class _EditproPageState extends State<EditproPage> {
                               child: TextField(
                                 onChanged: (value) => address =
                                     value, // เก็บค่าที่กรอกในตัวแปร address
-
+                
                                 decoration: InputDecoration(
                                   labelText:
                                       "Your Address", // ข้อความ "Your Address" ภายใน TextField
@@ -377,6 +375,7 @@ class _EditproPageState extends State<EditproPage> {
                       ),
                     ),
                   ),
+                  SizedBox(height: 20,)
                 ],
               ),
             ],

@@ -2,17 +2,17 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rider/config/config.dart';
-import 'package:rider/model/request/RegisterModel.dart';
 import 'package:rider/pages/login.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:another_flushbar/flushbar.dart';
 import 'package:http/http.dart' as http;
+import 'package:geocoding/geocoding.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -22,16 +22,6 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  TextEditingController usernameCtl = TextEditingController();
-  TextEditingController phoneCtl = TextEditingController();
-  TextEditingController addressCtl = TextEditingController();
-  TextEditingController carregCtl = TextEditingController();
-  TextEditingController emailCtl = TextEditingController();
-  TextEditingController passCtl = TextEditingController();
-  TextEditingController conpassCtl = TextEditingController();
-
-  String url = '';
-
   String username = '';
   String phone = '';
   String address = '';
@@ -44,7 +34,16 @@ class _RegisterPageState extends State<RegisterPage> {
   final ImagePicker picker = ImagePicker();
   XFile? image; // ตัวแปรเพื่อเก็บภาพที่เลือก
 
-  @override
+  TextEditingController usernameCtl = TextEditingController();
+  TextEditingController emailCtl = TextEditingController();
+  TextEditingController passCtl = TextEditingController();
+  TextEditingController conpassCtl = TextEditingController();
+  TextEditingController phoneCtl = TextEditingController();
+  TextEditingController addressCtl = TextEditingController();
+  TextEditingController carregCtl = TextEditingController();
+
+  String url = '';
+
   void initState() {
     super.initState();
     //Configguration config = Configguration();
@@ -703,6 +702,15 @@ class _RegisterPageState extends State<RegisterPage> {
                                     height: 50,
                                     child: GestureDetector(
                                       onTap: () {
+                                        log('---------------------------------------');
+                                        log('Username: $username');
+                                        log('Phone: $phone');
+                                        log('Address: $address');
+                                        log('Car Registration: $carreg');
+                                        log('Email: $email');
+                                        log('pass: $pass');
+                                        log('compass: $compass');
+                                        log('Selected Index: $selectedIndex'); // Log ค่า index
                                         if (_fillIndex == 0) {
                                           RegisterUser(
                                               context,
@@ -777,112 +785,6 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  void RegisterUser(
-      BuildContext context,
-      TextEditingController usernameCtl,
-      TextEditingController emailCtl,
-      TextEditingController phoneCtl,
-      TextEditingController addressCtl,
-      TextEditingController passCtl,
-      TextEditingController conpassCtl) async {
-    var position = await _determinePosition();
-    log("User Position: ${position.latitude}, ${position.longitude}");
-    log(usernameCtl.text);
-    log(emailCtl.text);
-    log(passCtl.text);
-    log(phoneCtl.text);
-    log(addressCtl.text);
-
-    // Validate if all fields are filled
-    if (usernameCtl.text.isEmpty ||
-        phoneCtl.text.isEmpty ||
-        addressCtl.text.isEmpty ||
-        emailCtl.text.isEmpty ||
-        passCtl.text.isEmpty ||
-        conpassCtl.text.isEmpty) {
-      log('Please fill all the fields');
-      _showFlushbar(
-          context, 'กรุณากรอกข้อมูลให้ครบ', 'Please fill all the fields');
-      return;
-    }
-
-    // Validate passwords match
-    if (passCtl.text != conpassCtl.text) {
-      log('Passwords do not match');
-      _showFlushbar(context, 'รหัสผ่านไม่ตรงกัน', 'Passwords do not match');
-      return;
-    }
-
-    // Prepare the user registration model
-    UserRegisterModel req = UserRegisterModel(
-      username: usernameCtl.text,
-      email: emailCtl.text,
-      password: passCtl.text,
-      phone: phoneCtl.text,
-      image:
-          "https://i.pinimg.com/736x/0d/b5/da/0db5da143c7bf4ace9d3635bd4e35fcc.jpg", // Placeholder image
-      address: addressCtl.text,
-      gpsLatitude: position.latitude,
-      gpsLongitude: position.longitude,
-    );
-
-    // Show a progress indicator
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const Center(child: CircularProgressIndicator());
-      },
-    );
-
-    try {
-      var response = await http.post(
-        Uri.parse("$url/register/user"),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(req.toJson()),
-      );
-
-      // Dismiss progress indicator
-      Navigator.of(context).pop();
-
-      // Handle different response statuses
-      if (response.statusCode == 201) {
-        log('Registration successful');
-        _showFlushbar(
-          context,
-          'สมัครสมาชิคสำเร็จ!!!',
-          'Registration Successful!',
-          onOkPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-            );
-          },
-        );
-      } else if (response.statusCode == 400) {
-        log('Invalid input or missing fields');
-        _showFlushbar(
-            context, 'ข้อมูลไม่ถูกต้อง', 'Invalid input or missing fields');
-      } else if (response.statusCode == 409) {
-        log('Username already exists');
-        _showFlushbar(
-            context, 'ชื่อผู้ใช้นี้มีอยู่แล้ว', 'Username already exists');
-      } else {
-        log('Registration failed');
-        log('Response: ${response.body}');
-        _showFlushbar(context, 'การลงทะเบียนล้มเหลว', 'Registration failed');
-      }
-    } catch (e) {
-      // Dismiss progress indicator
-      Navigator.of(context).pop();
-      log('Error: $e');
-      _showFlushbar(
-          context, 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์', 'Error: $e');
-    }
-  }
-
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -920,17 +822,18 @@ class _RegisterPageState extends State<RegisterPage> {
     return await Geolocator.getCurrentPosition();
   }
 
-  void RegisterRider(
+  void RegisterUser(
       BuildContext context,
       TextEditingController usernameCtl,
       TextEditingController emailCtl,
       TextEditingController phoneCtl,
-      TextEditingController carregCtl,
+      TextEditingController addressCtl,
       TextEditingController passCtl,
-      TextEditingController conpassCtl) {
+      TextEditingController conpassCtl) async {
+    // Validate if all fields are filled
     if (usernameCtl.text.isEmpty ||
         phoneCtl.text.isEmpty ||
-        carregCtl.text.isEmpty ||
+        addressCtl.text.isEmpty ||
         emailCtl.text.isEmpty ||
         passCtl.text.isEmpty ||
         conpassCtl.text.isEmpty) {
@@ -940,44 +843,219 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
+    // Validate passwords match
     if (passCtl.text != conpassCtl.text) {
       log('Passwords do not match');
       _showFlushbar(context, 'รหัสผ่านไม่ตรงกัน', 'Passwords do not match');
       return;
     }
-    log("Rider");
-  }
-}
 
-void _showFlushbar(BuildContext context, String title, String message,
-    {VoidCallback? onOkPressed}) {
-  Flushbar(
-    title: title,
-    message: message,
-    backgroundGradient: const LinearGradient(
-      colors: [
-        Color.fromARGB(255, 124, 209, 145),
-        Color.fromARGB(255, 4, 169, 152)
-      ],
-    ),
-    backgroundColor: Colors.red,
-    boxShadows: const [
-      BoxShadow(
-          color: Color.fromRGBO(25, 105, 196, 1),
-          offset: Offset(0.0, 2.0),
-          blurRadius: 5.0)
-    ],
-    duration: const Duration(seconds: 3),
-    flushbarPosition: FlushbarPosition.TOP,
-    margin: const EdgeInsets.all(8.0),
-    icon: const Icon(
-      Icons.info_outline,
-      color: Colors.white,
-      size: 28.0,
-    ),
-  ).show(context).then((_) {
-    if (onOkPressed != null) {
-      onOkPressed();
+    // เรียกใช้ getCoordinates เพื่อแปลงที่อยู่เป็นละติจูดและลองจิจูด
+    final coordinates = await getCoordinates(addressCtl.text);
+    log('Latitude: ${coordinates['latitude']}, Longitude: ${coordinates['longitude']}');
+
+    // สร้างข้อมูลผู้ใช้
+    Map<String, dynamic> userData = {
+      'Username': usernameCtl.text,
+      'Email': emailCtl.text,
+      'Password': passCtl.text,
+      'Phone': phoneCtl.text,
+      'Image':
+          "https://i.pinimg.com/736x/0d/b5/da/0db5da143c7bf4ace9d3635bd4e35fcc.jpg",
+      'Address': addressCtl.text,
+      'GPS_Latitude': coordinates['latitude'], // ใช้ค่าละติจูดที่ได้
+      'GPS_Longitude': coordinates['longitude'], // ใช้ค่าลองจิจูดที่ได้
+    };
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
+    try {
+      // ทำการส่ง POST request ไปยัง API
+      final response = await http.post(
+        Uri.parse('$url/register/user'),
+        headers: {
+          'Content-Type': 'application/json', // กำหนด headers ให้เป็น JSON
+        },
+        body: jsonEncode(userData), // แปลงข้อมูลเป็น JSON ก่อนส่ง
+      );
+
+      Navigator.of(context).pop();
+
+      if (response.statusCode == 201) {
+        log('Registration successful');
+        _showFlushbar(
+          context,
+          'Registration Successful',
+          'สมัครสมาชิคสำเร็จ!!!',
+          onOkPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const LoginPage(),
+              ),
+            );
+          },
+        );
+      } else if (response.statusCode == 409) {
+        log('Username already exists');
+        _showFlushbar(
+            context, 'ชื่อผู้ใช้นี้มีอยู่แล้ว', 'Username already exists');
+      } else {
+        log('Registration failed');
+        _showFlushbar(context, 'การลงทะเบียนล้มเหลว', 'Registration failed');
+      }
+    } catch (e) {
+      // ปิด progress dialog
+      Navigator.of(context).pop();
+      log('Error: $e');
+      _showFlushbar(
+          context, 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์', 'Error: $e');
     }
-  });
+  }
+
+  void RegisterRider(
+      BuildContext context,
+      TextEditingController usernameCtl,
+      TextEditingController emailCtl,
+      TextEditingController phoneCtl,
+      TextEditingController carregCtl,
+      TextEditingController passCtl,
+      TextEditingController conpassCtl) async {
+    if (usernameCtl.text.isEmpty ||
+        phoneCtl.text.isEmpty ||
+        emailCtl.text.isEmpty ||
+        carregCtl.text.isEmpty ||
+        passCtl.text.isEmpty ||
+        conpassCtl.text.isEmpty) {
+      log('Please fill all the fields');
+      _showFlushbar(
+          context, 'กรุณากรอกข้อมูลให้ครบ', 'Please fill all the fields');
+      return;
+    }
+
+    // Validate passwords match
+    if (passCtl.text != conpassCtl.text) {
+      log('Passwords do not match');
+      _showFlushbar(context, 'รหัสผ่านไม่ตรงกัน', 'Passwords do not match');
+      return;
+    }
+    Map<String, dynamic> userData = {
+      'Username': usernameCtl.text,
+      'Email': emailCtl.text,
+      'Password': passCtl.text,
+      'Phone': phoneCtl.text,
+      'Image':
+          "https://i.pinimg.com/736x/0d/b5/da/0db5da143c7bf4ace9d3635bd4e35fcc.jpg",
+      'VehicleRegistration': carregCtl.text,
+    };
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
+    try {
+      // ทำการส่ง POST request ไปยัง API
+      final response = await http.post(
+        Uri.parse('$url/register/rider'),
+        headers: {
+          'Content-Type': 'application/json', // กำหนด headers ให้เป็น JSON
+        },
+        body: jsonEncode(userData), // แปลงข้อมูลเป็น JSON ก่อนส่ง
+      );
+
+      Navigator.of(context).pop();
+
+      if (response.statusCode == 201) {
+        log('Registration successful');
+        _showFlushbar(
+          context,
+          'Registration Successful',
+          'สมัครสมาชิคสำเร็จ!!!',
+          onOkPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const LoginPage(),
+              ),
+            );
+          },
+        );
+      } else if (response.statusCode == 409) {
+        log('Username already exists');
+        _showFlushbar(
+            context, 'ชื่อผู้ใช้นี้มีอยู่แล้ว', 'Username already exists');
+      } else {
+        log('Registration failed');
+        _showFlushbar(context, 'การลงทะเบียนล้มเหลว', 'Registration failed');
+      }
+    } catch (e) {
+      // ปิด progress dialog
+      Navigator.of(context).pop();
+      log('Error: $e');
+      _showFlushbar(
+          context, 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์', 'Error: $e');
+    }
+  }
+
+  void _showFlushbar(BuildContext context, String title, String message,
+      {VoidCallback? onOkPressed}) {
+    Flushbar(
+      title: title,
+      message: message,
+      backgroundGradient: const LinearGradient(
+        colors: [
+          Color.fromARGB(255, 124, 209, 145),
+          Color.fromARGB(255, 4, 169, 152)
+        ],
+      ),
+      backgroundColor: Colors.red,
+      boxShadows: const [
+        BoxShadow(
+            color: Color.fromRGBO(25, 105, 196, 1),
+            offset: Offset(0.0, 2.0),
+            blurRadius: 5.0)
+      ],
+      duration: const Duration(seconds: 3),
+      flushbarPosition: FlushbarPosition.TOP,
+      margin: const EdgeInsets.all(8.0),
+      icon: const Icon(
+        Icons.info_outline,
+        color: Colors.white,
+        size: 28.0,
+      ),
+    ).show(context).then((_) {
+      if (onOkPressed != null) {
+        onOkPressed();
+      }
+    });
+  }
+
+  Future<Map<String, double>> getCoordinates(String address) async {
+    try {
+      List<Location> locations = await locationFromAddress(address);
+      return {
+        'latitude': locations.first.latitude,
+        'longitude': locations.first.longitude,
+      };
+    } catch (e) {
+      log('Error getting coordinates: $e');
+      return {
+        'latitude': 0.0,
+        'longitude': 0.0
+      }; // ส่งค่าผิดเมื่อเกิดข้อผิดพลาด
+    }
+  }
 }
