@@ -5,6 +5,8 @@ import 'package:rider/pages/editpro.dart';
 import 'package:rider/pages/login.dart';
 import 'package:rider/pages/receiver.dart';
 import 'package:rider/pages/sender.dart';
+import 'dart:developer' as developer;
+import 'package:get_storage/get_storage.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -227,6 +229,13 @@ class _ProdilePageState extends State<ProfilePage> {
                     InkWell(
                       onTap: () {
                         // เมื่อกดปุ่มนี้ให้ไปที่หน้า LoginPage
+                        GetStorage().erase().then((_) {
+                          developer.log(
+                              'Data cleared from GetStorage'); // เพิ่มการแจ้งเตือนใน log
+                        }).catchError((error) {
+                          developer.log(
+                              'Error clearing data from GetStorage: $error'); // เพิ่มการแจ้งเตือนใน log
+                        });
                         Get.to(() => const LoginPage());
                       },
                       child: Container(

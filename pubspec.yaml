@@ -46,6 +46,8 @@ dependencies:
   sliding_up_panel: ^2.0.0+1
   latlong2: ^0.9.1
   flutter_map: ^7.0.2
+  bcrypt: ^1.1.3  # Update to a compatible version
+  get_storage: ^2.1.1
 
 dev_dependencies:
   flutter_test:
