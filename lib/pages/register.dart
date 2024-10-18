@@ -13,6 +13,8 @@ import 'package:toggle_switch/toggle_switch.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:geocoding/geocoding.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_map/flutter_map.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -41,8 +43,12 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController phoneCtl = TextEditingController();
   TextEditingController addressCtl = TextEditingController();
   TextEditingController carregCtl = TextEditingController();
+  TextEditingController positionCtl = TextEditingController();
+  LatLng latLng = const LatLng(16.246825669508297, 103.25199289277295);
+  MapController mapController = MapController();
 
   String url = '';
+  bool _showMap = false;
 
   void initState() {
     super.initState();
@@ -478,6 +484,107 @@ class _RegisterPageState extends State<RegisterPage> {
                                       SizedBox(
                                         height: 50,
                                         child: TextField(
+                                          controller: positionCtl,
+                                          readOnly:
+                                              true, // Read-only เพื่อให้ผู้ใช้คลิกเลือกตำแหน่งจากแผนที่เท่านั้น
+                                          decoration: InputDecoration(
+                                            labelText: "Selected Position",
+                                            labelStyle: const TextStyle(
+                                                color: Colors.white),
+                                            prefixIcon: const Icon(Icons.map,
+                                                color: Colors.white),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30.0),
+                                              borderSide: const BorderSide(
+                                                  color: Colors.white),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30.0),
+                                              borderSide: const BorderSide(
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                          style: const TextStyle(
+                                              color: Colors.white),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      // ปุ่มกดเพื่อเปิด/ปิดแผนที่
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _showMap =
+                                                !_showMap; // สลับการแสดง/ซ่อนแผนที่
+                                          });
+                                        },
+                                        child: Text(_showMap
+                                            ? 'Hide Map'
+                                            : 'Select Your Position'),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      // การแสดงแผนที่ (แสดงเมื่อ _showMap == true)
+                                      Visibility(
+                                        visible: _showMap,
+                                        child: SizedBox(
+                                          height: 300, // ขนาดความสูงของแผนที่
+                                          child: FlutterMap(
+                                            mapController: mapController,
+                                            options: MapOptions(
+                                              initialCenter: latLng,
+                                              initialZoom: 15.0,
+                                              onTap: (tapPosition, point) {
+                                                setState(() {
+                                                  latLng =
+                                                      point; // อัปเดตตำแหน่งที่เลือก
+                                                  positionCtl.text =
+                                                      'Lat: ${point.latitude}, Lng: ${point.longitude}'; // แสดงค่าตำแหน่งใน TextField
+                                                });
+                                              },
+                                            ),
+                                            children: [
+                                              TileLayer(
+                                                urlTemplate:
+                                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                                userAgentPackageName:
+                                                    'com.example.app',
+                                                maxNativeZoom: 19,
+                                              ),
+                                              MarkerLayer(
+                                                markers: [
+                                                  Marker(
+                                                    point: latLng,
+                                                    width: 40,
+                                                    height: 40,
+                                                    child: const Icon(
+                                                        Icons.location_pin,
+                                                        color: Colors.red),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
+                                child: SizedBox(
+                                  width: MediaQuery.of(context).size.width *
+                                      0.8, // ปรับขนาดตามหน้าจอ
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                        height: 50,
+                                        child: TextField(
                                           controller:
                                               emailCtl, // เก็บค่าที่กรอกในตัวแปร email
                                           keyboardType:
@@ -713,13 +820,14 @@ class _RegisterPageState extends State<RegisterPage> {
                                         log('Selected Index: $selectedIndex'); // Log ค่า index
                                         if (_fillIndex == 0) {
                                           RegisterUser(
-                                              context,
-                                              usernameCtl,
-                                              emailCtl,
-                                              phoneCtl,
-                                              addressCtl,
-                                              passCtl,
-                                              conpassCtl);
+                                            context,
+                                            usernameCtl,
+                                            emailCtl,
+                                            phoneCtl,
+                                            addressCtl,
+                                            passCtl,
+                                            conpassCtl,
+                                          );
                                         } else {
                                           RegisterRider(
                                               context,
@@ -851,8 +959,8 @@ class _RegisterPageState extends State<RegisterPage> {
     }
 
     // เรียกใช้ getCoordinates เพื่อแปลงที่อยู่เป็นละติจูดและลองจิจูด
-    final coordinates = await getCoordinates(addressCtl.text);
-    log('Latitude: ${coordinates['latitude']}, Longitude: ${coordinates['longitude']}');
+    // final coordinates = await getCoordinates(addressCtl.text);
+    // log('Latitude: ${coordinates['latitude']}, Longitude: ${coordinates['longitude']}');
 
     // สร้างข้อมูลผู้ใช้
     Map<String, dynamic> userData = {
@@ -863,8 +971,8 @@ class _RegisterPageState extends State<RegisterPage> {
       'Image':
           "https://i.pinimg.com/736x/0d/b5/da/0db5da143c7bf4ace9d3635bd4e35fcc.jpg",
       'Address': addressCtl.text,
-      'GPS_Latitude': coordinates['latitude'], // ใช้ค่าละติจูดที่ได้
-      'GPS_Longitude': coordinates['longitude'], // ใช้ค่าลองจิจูดที่ได้
+      'GPS_Latitude': latLng.latitude, // ใช้ค่าละติจูดที่ได้
+      'GPS_Longitude': latLng.longitude, // ใช้ค่าลองจิจูดที่ได้
     };
 
     showDialog(
@@ -1043,19 +1151,23 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
-  Future<Map<String, double>> getCoordinates(String address) async {
-    try {
-      List<Location> locations = await locationFromAddress(address);
-      return {
-        'latitude': locations.first.latitude,
-        'longitude': locations.first.longitude,
-      };
-    } catch (e) {
-      log('Error getting coordinates: $e');
-      return {
-        'latitude': 0.0,
-        'longitude': 0.0
-      }; // ส่งค่าผิดเมื่อเกิดข้อผิดพลาด
-    }
-  }
+  // Future<Map<String, double>> getCoordinates(String address) async {
+  //   try {
+  //     // แทนที่ช่องว่างในที่อยู่ด้วย '%20'
+  //     String encodedAddress = address.replaceAll(' ', '%20');
+
+  //     // ใช้ encoded address ในการค้นหาพิกัด
+  //     List<Location> locations = await locationFromAddress(encodedAddress);
+  //     return {
+  //       'latitude': locations.first.latitude,
+  //       'longitude': locations.first.longitude,
+  //     };
+  //   } catch (e) {
+  //     log('Error getting coordinates: $e');
+  //     return {
+  //       'latitude': 0.0,
+  //       'longitude': 0.0
+  //     }; // ส่งค่าพิกัดผิดเมื่อเกิดข้อผิดพลาด
+  //   }
+  // }
 }
