@@ -512,17 +512,21 @@ class _RegisterPageState extends State<RegisterPage> {
                                       ),
                                       const SizedBox(height: 10),
                                       // ปุ่มกดเพื่อเปิด/ปิดแผนที่
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _showMap =
-                                                !_showMap; // สลับการแสดง/ซ่อนแผนที่
-                                          });
-                                        },
-                                        child: Text(_showMap
-                                            ? 'Hide Map'
-                                            : 'Select Your Position'),
-                                      ),
+                                     GestureDetector(
+  onTap: () {
+    setState(() {
+      _showMap = !_showMap; // สลับการแสดง/ซ่อนแผนที่
+    });
+  },
+  child: Text(
+    _showMap ? 'แสดงน้อยลง' : 'เลือกที่อยู่ของคุณ',
+    style: TextStyle(
+      color: Colors.white, // สีของข้อความ
+      decoration: TextDecoration.underline, // ใส่เส้นใต้ข้อความ
+      decorationThickness: 2.0, // ความหนาของเส้นใต้ (ปรับเปลี่ยนได้)
+    ),
+  ),
+),
                                       const SizedBox(height: 10),
                                       // การแสดงแผนที่ (แสดงเมื่อ _showMap == true)
                                       Visibility(
@@ -1015,7 +1019,7 @@ class _RegisterPageState extends State<RegisterPage> {
       } else if (response.statusCode == 409) {
         log('Username already exists');
         _showFlushbar(
-            context, 'ชื่อผู้ใช้นี้มีอยู่แล้ว', 'Username already exists');
+            context, 'ชื่อผู้ใช้ หรือ เบอร์มือถือ หรือ Email มีอยู่แล้ว', 'Username already exists');
       } else {
         log('Registration failed');
         _showFlushbar(context, 'การลงทะเบียนล้มเหลว', 'Registration failed');
