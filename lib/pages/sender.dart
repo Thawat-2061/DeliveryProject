@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:rider/pages/addOrder.dart';
 import 'package:rider/pages/create.dart';
 import 'package:rider/pages/detail.dart';
 import 'package:rider/pages/receiver.dart';
@@ -95,65 +94,61 @@ class _SenderPageState extends State<SenderPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SizedBox(width: 20), // ระยะห่างระหว่างไอคอนกับข้อความ
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: () {
-                            Get.to(() => const CreatePage());
-                          },
-                          style: FilledButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(
-                                255, 48, 48, 48), // สีปุ่มเป็นสีเทา
-                            side: BorderSide(
-                                color: Colors.white), // ขอบปุ่มเป็นสีขาว
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                'assets/images/iadd.png', // เส้นทางรูปภาพของคุณ
-                                width: 20, // ขนาดไอคอน
-                                height: 20,
+                      FilledButton(
+                        onPressed: () {
+                          Get.to(() => const CreatePage());
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(
+                              255, 48, 48, 48), // สีปุ่มเป็นสีเทา
+                          side: BorderSide(
+                              color: Colors.white), // ขอบปุ่มเป็นสีขาว
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              'assets/images/iadd.png', // เส้นทางรูปภาพของคุณ
+                              width: 20, // ขนาดไอคอน
+                              height: 20,
+                            ),
+                            Text(
+                              "Create Order",
+                              style: TextStyle(
+                                color:
+                                    Colors.white, // สีตัวหนังสือเป็นสีขาว
                               ),
-                              Text(
-                                "Create Order",
-                                style: TextStyle(
-                                  color:
-                                      Colors.white, // สีตัวหนังสือเป็นสีขาว
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                       SizedBox(width: 20), // ระยะห่างระหว่างปุ่มสองปุ่ม
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: () {
-                            Get.to(() => const AddOrderPage());
-                          },
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.grey, // สีปุ่มเป็นสีเทา
-                            side: BorderSide(
-                                color: Colors.white), // ขอบปุ่มเป็นสีขาว
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                'assets/images/sh.png', // เส้นทางรูปภาพของคุณ
-                                width: 20, // ขนาดไอคอน
-                                height: 20,
+                      FilledButton(
+                        onPressed: () {
+                          // Get.to(() => const AddOrderPage());
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.grey, // สีปุ่มเป็นสีเทา
+                          side: BorderSide(
+                              color: Colors.white), // ขอบปุ่มเป็นสีขาว
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              'assets/images/sh.png', // เส้นทางรูปภาพของคุณ
+                              width: 20, // ขนาดไอคอน
+                              height: 20,
+                            ),
+                            Text(
+                              "Find Order",
+                              style: TextStyle(
+                                color:
+                                    Colors.white, // สีตัวหนังสือเป็นสีขาว
                               ),
-                              Text(
-                                "Find Order",
-                                style: TextStyle(
-                                  color:
-                                      Colors.white, // สีตัวหนังสือเป็นสีขาว
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                       SizedBox(width: 20), // ระยะห่างระหว่างไอคอนกับข้อความ
