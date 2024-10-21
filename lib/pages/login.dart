@@ -25,6 +25,8 @@ class _LoginPageState extends State<LoginPage> {
   String email = '';
   int selectedIndex = 0; // ตัวแปรเพื่อเก็บค่า index
   int _fillIndex = 0;
+  List<dynamic>? userData;
+  var userId;
 
   TextEditingController inputCtl = TextEditingController();
   TextEditingController passCtl = TextEditingController();
@@ -418,6 +420,8 @@ class _LoginPageState extends State<LoginPage> {
     // ตรวจสอบว่าค่าเป็น null หรือไม่ก่อนเขียนลง storage
     await storage.write('UserID', user['UserID']?.toString() ?? '');
     await storage.write('Username', user['Username']?.toString() ?? '');
+    await storage.write('Email', user['Email']?.toString() ?? '');
+    await storage.write('Image', user['Image']?.toString() ?? '');
   }
 
 // ฟังก์ชันนำผู้ใช้ไปยังหน้า SenderPage
@@ -461,6 +465,7 @@ class _LoginPageState extends State<LoginPage> {
             final storage = GetStorage();
             await storage.write('RiderID', rider['RiderID'].toString());
             await storage.write('Username', rider['Username'].toString());
+            await storage.write('Email', rider['Email'].toString());
 
             Navigator.of(context).pop();
 

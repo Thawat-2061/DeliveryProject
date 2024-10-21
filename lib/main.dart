@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:rider/pages/create.dart';
 import 'package:rider/pages/editpro.dart';
+import 'package:rider/pages/firebase.dart';
 import 'package:rider/pages/login.dart';
 import 'package:rider/pages/profile.dart';
 import 'package:rider/pages/register.dart';
@@ -11,12 +14,23 @@ import 'package:rider/pages/sender.dart';
 import 'package:rider/pages/user.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:rider/shared/appdata.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init(); // Initialize GetStorage
   await initializeDateFormatting('th_TH');
-  runApp(const MyApp());
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Connnect to FireStore
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+  );
+  runApp(MultiProvider(
+    providers: [ChangeNotifierProvider(create: (context) => Appdata())],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {

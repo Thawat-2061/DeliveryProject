@@ -1,12 +1,17 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
+import 'package:rider/config/config.dart';
 import 'package:rider/pages/editpro.dart';
 import 'package:rider/pages/login.dart';
 import 'package:rider/pages/receiver.dart';
 import 'package:rider/pages/sender.dart';
 import 'dart:developer' as developer;
 import 'package:get_storage/get_storage.dart';
+import 'package:http/http.dart' as http;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -17,7 +22,14 @@ class ProfilePage extends StatefulWidget {
 
 class _ProdilePageState extends State<ProfilePage> {
   //-----------------------------------------------------------
+  List<dynamic>? userData;
   int _selectedIndex = 2;
+  String url = '';
+  var userId;
+  var userUsername;
+  var userEmail;
+  var userImage;
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -38,7 +50,18 @@ class _ProdilePageState extends State<ProfilePage> {
       // เพิ่มกรณีอื่นๆ สำหรับการนำทางไปยังหน้าอื่นๆ ที่นี่
     }
   }
+
 //-----------------------------------------------------------
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await GetApiEndpoint();
+    await getUserDataFromStorage();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,8 +80,8 @@ class _ProdilePageState extends State<ProfilePage> {
                 Column(
                   children: [
                     ClipOval(
-                      child: Image.asset(
-                        'assets/images/haha.jpg',
+                      child: Image.network(
+                        '$userImage',
                         width: 180.0, // กำหนดความกว้างของวงกลม
                         height: 180.0, // กำหนดความสูงของวงกลม
                         fit: BoxFit.cover, // ปรับขนาดภาพให้พอดีกับวงกลม
@@ -73,12 +96,12 @@ class _ProdilePageState extends State<ProfilePage> {
                         Column(
                           children: [
                             Text(
-                              'Triple Superdick',
+                              userUsername,
                               style: TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              'mrdick5555@gmail.com',
+                              userEmail,
                               style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -310,5 +333,38 @@ class _ProdilePageState extends State<ProfilePage> {
         ],
       ),
     );
+  }
+
+  Future<void> GetApiEndpoint() async {
+    Configguration.getConfig().then(
+      (value) {
+        log('MainUserGet API ');
+        // log(value['apiEndpoint']);
+        setState(() {
+          url = value['apiEndpoint'];
+        });
+      },
+    ).catchError((err) {
+      log(err.toString());
+    });
+  }
+
+  Future<void> getUserDataFromStorage() async {
+    final storage = GetStorage();
+
+    final userId = storage.read('UserID');
+    final userUsername = storage.read('Username');
+    final userEmail = storage.read('Email');
+    final userImage = storage.read('Image');
+
+    // log(userUsername);
+
+    setState(() {
+      this.userId = userId;
+      this.userUsername = userUsername;
+      this.userEmail = userEmail;
+      this.userImage = userImage;
+      // log(userId);
+    });
   }
 }

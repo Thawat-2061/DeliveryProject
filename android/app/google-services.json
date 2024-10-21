@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "20496632069",
+    "project_id": "delivery-67f06",
+    "storage_bucket": "delivery-67f06.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20496632069:android:6984f9bda2f114f5d1cf6c",
+        "android_client_info": {
+          "package_name": "com.example.rider"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0VTfNMh9G9KbOj7QAosHKSqtRbDDj1mg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
