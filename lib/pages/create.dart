@@ -55,9 +55,11 @@ class _CreatePageState extends State<CreatePage> {
   TextEditingController usernameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController addressController = TextEditingController();
+
   var customerId;
 
   String? selectedUserName;
+  String? selectedUserPhone;
   String? selectedUserAddress;
   double? selectedUserLatitude;
   double? selectedUserLongitude;
@@ -66,10 +68,12 @@ class _CreatePageState extends State<CreatePage> {
   MapController mapController = MapController();
   bool _showMap = false;
   var userID;
+  var userImage;
+  var orderImage;
 //-----------------------------------------------------------
 
   final ImagePicker picker = ImagePicker();
-  XFile? image;
+  File? image;
 //-----------------------------------------------------------
 
   List<UserGetRespon> UserGetResponses = [];
@@ -87,7 +91,7 @@ class _CreatePageState extends State<CreatePage> {
   Future<void> _initialize() async {
     await GetApiEndpoint();
     await getUserDataFromStorage();
-    fetchUsers();
+    await fetchUsers();
   }
 
   @override
@@ -117,11 +121,55 @@ class _CreatePageState extends State<CreatePage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        _pickImage();
+                        if (image != null) {
+                          // ถ้ามีรูปภาพแล้ว ให้แสดงตัวเลือกว่าจะดูภาพเต็มหรือเปลี่ยนภาพ
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Wrap(
+                                children: <Widget>[
+                                  ListTile(
+                                    leading: Icon(Icons.fullscreen),
+                                    title: Text('ดูภาพเต็ม'),
+                                    onTap: () {
+                                      Navigator.pop(
+                                          context); // ปิด Bottom Sheet
+                                      _showFullImage(
+                                          context, image!); // แสดงภาพเต็ม
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: Icon(Icons.image),
+                                    title: Text('เปลี่ยนรูป'),
+                                    onTap: () {
+                                      Navigator.pop(
+                                          context); // ปิด Bottom Sheet
+                                      _pickImage(); // เลือกรูปภาพใหม่
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        } else {
+                          // ถ้าไม่มีรูปภาพ ให้เปิดฟังก์ชันเลือกภาพ
+                          _pickImage();
+                        }
                       },
-                      child: Icon(
-                        Icons.add_photo_alternate,
-                        size: 150,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(
+                            10.0), // แสดงเป็นสี่เหลี่ยมมุมโค้ง
+                        child: image != null
+                            ? Image.file(
+                                image!,
+                                width: 180.0,
+                                height: 180.0,
+                                fit: BoxFit.cover,
+                              )
+                            : Icon(
+                                Icons.add_photo_alternate,
+                                size: 150,
+                              ),
                       ),
                     ),
                     Text(
@@ -261,8 +309,15 @@ class _CreatePageState extends State<CreatePage> {
                                 },
                                 fieldViewBuilder: (context, controller,
                                     focusNode, onFieldSubmitted) {
+                                  TextEditingController controllerToUse =
+                                      selectedUserPhone != null &&
+                                              selectedUserPhone!.isNotEmpty
+                                          ? controller // ใช้ controller ที่กำหนดเมื่อมีผู้ใช้
+                                          : phoneController; // ใช้ phoneController เมื่อไม่มีผู้ใช้
+
                                   return TextField(
-                                    controller: phoneController,
+                                    controller:
+                                        controllerToUse, // ใช้ controller ที่เลือกตามเงื่อนไข
                                     focusNode: focusNode,
                                     decoration: InputDecoration(
                                       labelText: "Phone Customer",
@@ -480,9 +535,9 @@ class _CreatePageState extends State<CreatePage> {
                             height: 50,
                             child: GestureDetector(
                               onTap: () {
-                                log('Product n: $name');
-                                log('Product d: $detail');
-                                log('Username: $selectedUserName');
+                                log('Product n: $productnameController');
+                                log('Product d: $detailController');
+                                log('Username: $usernameController');
                                 createOrder(context, productnameController,
                                     detailController);
                                 // Get.to(() => const SenderPage());
@@ -549,7 +604,11 @@ class _CreatePageState extends State<CreatePage> {
                             addressController.text = user
                                 .address; // กรอกข้อมูลอัตโนมัติในช่อง address
                             customerId = user.userId;
+
+                            selectedUserLatitude = user.gpsLatitude;
+                            selectedUserLongitude = user.gpsLongitude;
                           });
+                          mapController.move(latLng, mapController.camera.zoom);
                         },
                         child: Card(
                           child: Padding(
@@ -671,7 +730,7 @@ class _CreatePageState extends State<CreatePage> {
                 title: Text('Take a Photo'),
                 onTap: () async {
                   Navigator.of(modalContext).pop(); // ปิด modal
-                  // await _selectImage(ImageSource.camera); // เลือกภาพจากกล้อง
+                  await _selectImage(ImageSource.camera); // เลือกภาพจากกล้อง
                 },
               ),
               ListTile(
@@ -679,7 +738,7 @@ class _CreatePageState extends State<CreatePage> {
                 title: Text('Choose from Gallery'),
                 onTap: () async {
                   Navigator.of(modalContext).pop(); // ปิด modal
-                  // await _selectImage(ImageSource.gallery); // เลือกภาพจากแกลอรี่
+                  await _selectImage(ImageSource.gallery); // เลือกภาพจากแกลอรี่
                 },
               ),
             ],
@@ -822,7 +881,8 @@ class _CreatePageState extends State<CreatePage> {
     final userId = storage.read('UserID');
     // final userUsername = storage.read('Username');
     // final userEmail = storage.read('Email');
-    // final userImage = storage.read('Image');
+    final userImage = storage.read('Image');
+    final orderImage = storage.read('orderImage');
 
     // log(userUsername);
 
@@ -830,7 +890,8 @@ class _CreatePageState extends State<CreatePage> {
       this.userID = userId;
       // this.userUsername = userUsername;
       // this.userEmail = userEmail;
-      // this.userImage = userImage;
+      this.userImage = userImage;
+      this.orderImage = orderImage;
       // log(userId);
     });
   }
@@ -839,22 +900,24 @@ class _CreatePageState extends State<CreatePage> {
       BuildContext context,
       TextEditingController productnameController,
       TextEditingController detailController) async {
-    Map<String, dynamic> userData = {
+    await _uploadFile();
+
+    Map<String, dynamic> orderData = {
       'SenderID': userID,
       'ReceiverID': customerId,
       'Name': productnameController.text,
       'Detail': detailController.text,
-      // 'Status': imageUrl,
-      // 'Image': carregCtl.text,
+      'Status': 'AwaitingPickup',
+      'Image': orderImage,
     };
     try {
       // ทำการส่ง POST request ไปยัง API
       final response = await http.post(
-        Uri.parse('$url/register/rider'),
+        Uri.parse('$url/order'),
         headers: {
           'Content-Type': 'application/json', // กำหนด headers ให้เป็น JSON
         },
-        body: jsonEncode(userData), // แปลงข้อมูลเป็น JSON ก่อนส่ง
+        body: jsonEncode(orderData), // แปลงข้อมูลเป็น JSON ก่อนส่ง
       );
 
       Navigator.of(context).pop();
@@ -864,5 +927,89 @@ class _CreatePageState extends State<CreatePage> {
       log('Error: $e');
       log('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
     }
+  }
+
+  Future<void> _uploadFile() async {
+    if (image == null) {
+      print('No file selected!');
+      return;
+    }
+
+    try {
+      // สร้าง MultipartRequest โดยใช้ $url
+      var request =
+          http.MultipartRequest('POST', Uri.parse("$url/upload/order"));
+      // String fileName = path.basename(image!.path);
+
+      // เพิ่มไฟล์ไปยัง request
+      request.files.add(await http.MultipartFile.fromPath(
+        'file', // ชื่อฟิลด์ที่เซิร์ฟเวอร์คาดหวัง
+        image!.path,
+        // filename: fileName, // ตั้งชื่อไฟล์ตามที่เซิร์ฟเวอร์ต้องการ
+      ));
+
+      // ส่ง request
+      final response = await request.send();
+
+      // รับข้อมูลที่ตอบกลับ
+      final responseData = await http.Response.fromStream(response);
+      print('Response body: ${responseData.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(responseData.body);
+        log(data.toString()); // แสดงข้อมูลที่ได้รับ
+        final storage = GetStorage();
+        await storage.write('orderImage', data['url'].toString() ?? '');
+        await getUserDataFromStorage();
+        // setState(() {});
+
+        // // ตรวจสอบว่า 'url' มีอยู่ใน data หรือไม่
+        // if (data.containsKey('url')) {
+        //   final res = await http.post(
+        //     Uri.parse("$url/upload/update"),
+        //     headers: {"Content-Type": "application/json; charset=utf-8"},
+        //     body:
+        //         jsonEncode({"UserID": userId, "Image": data['url'].toString()}),
+        //   );
+
+        //   if (res.statusCode == 200) {
+        //     log("Upload Firebase");
+        //     final storage = GetStorage();
+        //     await storage.write('Image', data['url'].toString() ?? '');
+        //   }
+        // } else {
+        //   print('Error: URL not found in response');
+        // }
+
+        // print('File uploaded successfully: $data');
+      } else {
+        print('Error uploading file: ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      print('Error occurred while uploading file: $e');
+    }
+  }
+
+  Future<void> _selectImage(ImageSource source) async {
+    final pickedFile = await picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        image = File(pickedFile.path);
+      });
+      // เรียกใช้งานฟังก์ชันอัปโหลดไฟล์หลังเลือกภาพ
+    }
+  }
+
+  void _showFullImage(BuildContext context, File imageFile) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Container(
+            child: Image.file(imageFile, fit: BoxFit.cover),
+          ),
+        );
+      },
+    );
   }
 }
