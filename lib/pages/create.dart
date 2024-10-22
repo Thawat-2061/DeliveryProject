@@ -78,6 +78,11 @@ class _CreatePageState extends State<CreatePage> {
 
   List<UserGetRespon> UserGetResponses = [];
 
+  TextEditingController searchController = TextEditingController();
+  List<UserGetRespon> filteredUsers =
+      []; // สร้าง List สำหรับเก็บข้อมูลที่กรองแล้ว
+  // List<UserGetRespon> allUsers = UserGetResponses;
+
   String detail = '';
   String name = '';
   String url = '';
@@ -86,12 +91,31 @@ class _CreatePageState extends State<CreatePage> {
   void initState() {
     super.initState();
     _initialize();
+    filteredUsers = UserGetResponses;
+    phoneController.addListener(() {
+      filterUsers(phoneController
+          .text); // เรียกฟังก์ชันกรองเมื่อมีการเปลี่ยนแปลงใน TextField
+    });
   }
 
   Future<void> _initialize() async {
     await GetApiEndpoint();
+
     await getUserDataFromStorage();
-    await fetchUsers();
+  }
+
+  void filterUsers(String searchQuery) {
+    setState(() {
+      // กรองเฉพาะเมื่อมีข้อความในช่องค้นหา
+      if (searchQuery.isEmpty) {
+        filteredUsers =
+            UserGetResponses; // ถ้าไม่มีการค้นหา ให้แสดงผู้ใช้ทั้งหมด
+      } else {
+        filteredUsers = UserGetResponses.where((user) =>
+                user.phone.contains(searchQuery)) // กรองข้อมูลตามเบอร์โทรศัพท์
+            .toList();
+      }
+    });
   }
 
   @override
@@ -295,16 +319,22 @@ class _CreatePageState extends State<CreatePage> {
                                     final selectedUser =
                                         UserGetResponses.firstWhere((user) =>
                                             user.phone == selectedNumber);
-                                    selectedUserName = selectedUser.username;
-                                    selectedUserAddress =
+
+                                    // ตั้งค่าฟิลด์ต่าง ๆ หลังจากเลือกเบอร์
+                                    usernameController.text =
+                                        selectedUser.username;
+                                    addressController.text =
                                         selectedUser.address; // เพิ่ม Address
                                     selectedUserLatitude = selectedUser
                                         .gpsLatitude; // เพิ่ม Latitude
                                     selectedUserLongitude = selectedUser
                                         .gpsLongitude; // เพิ่ม Longitude
 
+                                    // อัปเดตตำแหน่งบนแผนที่ (ถ้ามี)
                                     mapController.move(
-                                        latLng, mapController.camera.zoom);
+                                        LatLng(selectedUserLatitude!,
+                                            selectedUserLongitude!),
+                                        mapController.camera.zoom);
                                   });
                                 },
                                 fieldViewBuilder: (context, controller,
@@ -312,12 +342,12 @@ class _CreatePageState extends State<CreatePage> {
                                   TextEditingController controllerToUse =
                                       selectedUserPhone != null &&
                                               selectedUserPhone!.isNotEmpty
-                                          ? controller // ใช้ controller ที่กำหนดเมื่อมีผู้ใช้
-                                          : phoneController; // ใช้ phoneController เมื่อไม่มีผู้ใช้
+                                          ? controller
+                                          : phoneController; // ใช้ controllerToUse ตามเงื่อนไขที่ต้องการ
 
                                   return TextField(
                                     controller:
-                                        controllerToUse, // ใช้ controller ที่เลือกตามเงื่อนไข
+                                        controllerToUse, // ใช้ controllerToUse
                                     focusNode: focusNode,
                                     decoration: InputDecoration(
                                       labelText: "Phone Customer",
@@ -581,8 +611,47 @@ class _CreatePageState extends State<CreatePage> {
                     ],
                   ),
                 ),
+                Align(
+                  alignment: Alignment.centerRight, // จัดชิดขวา
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width *
+                        0.5, // ขนาดความกว้าง 50% ของหน้าจอ
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 22),
+                      child: TextField(
+                        controller:
+                            phoneController, // ตัวควบคุมสำหรับ TextField
+                        decoration: InputDecoration(
+                          labelText: "ค้นหาด้วยเบอร์", // ตั้งชื่อช่องค้นหา
+                          labelStyle: TextStyle(
+                            color: Colors.white,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search, // ใช้ไอคอนค้นหา
+                            color: Colors.white,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        style: TextStyle(color: Colors.white), // สีของข้อความ
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10), // เว้นช่องว่างเล็กน้อย
+                // แสดงข้อมูลผู้ใช้ที่กรองแล้ว
                 Column(
-                  children: UserGetResponses.asMap().entries.map((entry) {
+                  children: filteredUsers.asMap().entries.map((entry) {
                     int index = entry.key; // ดึงลำดับ index ของแต่ละรายการ
                     var user = entry.value; // ดึงข้อมูลของ user
 
@@ -591,11 +660,9 @@ class _CreatePageState extends State<CreatePage> {
                           0.9, // ปรับขนาดตามหน้าจอ
                       child: GestureDetector(
                         onTap: () {
-                          // ฟังก์ชันที่เรียกใช้เมื่อมีการกด
                           log('User: ${user.username}');
                           log('Phone: ${user.phone}');
                           log('Address: ${user.address}');
-                          // คุณสามารถเพิ่มฟังก์ชันเพิ่มเติมที่นี่ เช่น เปิดหน้าจอรายละเอียด
                           setState(() {
                             usernameController.text = user
                                 .username; // กรอกข้อมูลอัตโนมัติในช่อง username
@@ -604,7 +671,6 @@ class _CreatePageState extends State<CreatePage> {
                             addressController.text = user
                                 .address; // กรอกข้อมูลอัตโนมัติในช่อง address
                             customerId = user.userId;
-
                             selectedUserLatitude = user.gpsLatitude;
                             selectedUserLongitude = user.gpsLongitude;
                           });
@@ -617,7 +683,6 @@ class _CreatePageState extends State<CreatePage> {
                               crossAxisAlignment:
                                   CrossAxisAlignment.start, // ชิดซ้าย
                               children: [
-                                // รูปภาพแบบวงกลมอยู่ทางซ้าย
                                 Container(
                                   child: CircleAvatar(
                                     radius: 30.0, // ขนาดของรูปภาพ
@@ -630,7 +695,6 @@ class _CreatePageState extends State<CreatePage> {
                                 SizedBox(
                                     width:
                                         10), // เว้นช่องว่างระหว่างรูปภาพกับข้อความ
-                                // ข้อความอยู่ทางขวา
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -894,6 +958,7 @@ class _CreatePageState extends State<CreatePage> {
       this.orderImage = orderImage;
       // log(userId);
     });
+    await fetchUsers();
   }
 
   Future<void> createOrder(
@@ -907,7 +972,7 @@ class _CreatePageState extends State<CreatePage> {
       'ReceiverID': customerId,
       'Name': productnameController.text,
       'Detail': detailController.text,
-      'Status': 'AwaitingPickup',
+      'Status': 'รอไรเดอร์',
       'Image': orderImage,
     };
     try {
