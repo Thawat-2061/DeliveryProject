@@ -1,6 +1,12 @@
+import 'dart:convert';
+import 'dart:developer';
+import 'package:get_storage/get_storage.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
+import 'package:rider/config/config.dart';
+import 'package:rider/model/response/RiderGetRespons.dart';
 import 'package:rider/pages/detail.dart';
 import 'package:rider/pages/riderview.dart';
 import 'package:rider/pages/riprofile.dart';
@@ -31,6 +37,27 @@ class _RiderPageState extends State<RiderPage> {
       // เพิ่มกรณีอื่นๆ สำหรับการนำทางไปยังหน้าอื่นๆ ที่นี่
     }
   }
+
+//-----------------------------------------------------------
+  List<RiderGetResponse> RiderGetResponses = [];
+
+  String url = '';
+  var senderId;
+  var receiverId;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await GetApiEndpoint();
+    await getUserDataFromStorage();
+
+    fetchRider();
+  }
+
 //-----------------------------------------------------------
 
   @override
@@ -51,46 +78,6 @@ class _RiderPageState extends State<RiderPage> {
         child: Center(
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5),
-                    child: Row(
-                      children: [
-                        FilledButton(
-                          onPressed: () {
-                            // Get.to(() => const AddOrderPage());
-                          },
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.grey, // สีปุ่มเป็นสีเทา
-                            side: BorderSide(
-                                color: Colors.white), // ขอบปุ่มเป็นสีขาว
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Image.asset(
-                                'assets/images/sh.png', // เส้นทางรูปภาพของคุณ
-                                width: 20, // ขนาดไอคอน
-                                height: 20,
-                              ),
-                              SizedBox(
-                                  width: 2), // ระยะห่างระหว่างไอคอนกับข้อความ
-                              Text(
-                                "Find Order",
-                                style: TextStyle(
-                                  color: Colors.white, // สีตัวหนังสือเป็นสีขาว
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ],
-              ),
               Expanded(
                 child: Card(
                   child: Column(
@@ -135,6 +122,26 @@ class _RiderPageState extends State<RiderPage> {
                               label: Expanded(
                                 child: Center(
                                   child: Text(
+                                    'Sender',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Expanded(
+                                child: Center(
+                                  child: Text(
+                                    'Tel.',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Expanded(
+                                child: Center(
+                                  child: Text(
                                     'View',
                                     style: TextStyle(color: Colors.white),
                                   ),
@@ -142,134 +149,41 @@ class _RiderPageState extends State<RiderPage> {
                               ),
                             ),
                           ],
-                          rows: [
-                            DataRow(
+                          rows: RiderGetResponses.asMap().entries.map((entry) {
+                            var data = entry.value; // ดึงข้อมูลจาก API/database
+                            return DataRow(
                               cells: <DataCell>[
                                 DataCell(
                                   Center(
                                     child: InkWell(
                                       onTap: () {
-                                        // เมื่อกดที่ชื่อให้แสดงข้อมูลทั้งหมดใน dialog
+                                        // แสดงข้อมูลสินค้าใน Dialog
                                         showDialog(
                                           context: context,
-                                          barrierDismissible:
-                                              true, // สามารถกดที่พื้นหลังเพื่อปิด dialog ได้
+                                          barrierDismissible: true,
                                           builder: (BuildContext context) {
-                                            return const AlertDialog(
+                                            return AlertDialog(
                                               title: Text(
-                                                  'ข้อมูลของ Barret M82A1'),
+                                                'ชื่อสินค้า ${data.name}',
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              ),
                                               content: Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  Text('ชื่อ: Barret M82A1'),
+                                                  // Text('ชื่อ: ${data.name}'),
                                                   Text(
-                                                      'รายละเอียด: ...'), // เพิ่มรายละเอียดที่ต้องการแสดง
-                                                  // สามารถเพิ่ม Text widget อื่น ๆ ได้ตามต้องการ
+                                                      'รายละเอียด: ${data.detail}'),
                                                 ],
                                               ),
                                             );
                                           },
                                         );
                                       },
-                                      child: const SizedBox(
+                                      child: SizedBox(
                                         width: 50,
                                         child: Text(
-                                          'Barret M82A1',
-                                          overflow: TextOverflow.ellipsis,
-                                          softWrap: false,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Center(
-                                    child: InkWell(
-                                      onTap: () {
-                                        // นำทางไปหน้า DetailPage เมื่อกดปุ่ม
-                                        Get.to(() => const DetailPage());
-                                      },
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical:
-                                                8), // กำหนดขนาด padding ให้ปุ่ม
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey, // สีพื้นหลังปุ่ม
-                                          borderRadius: BorderRadius.circular(
-                                              20), // ทำให้มุมปุ่มโค้งมน
-                                        ),
-                                        child: const Text(
-                                          'รอไรเดอร์มารับสินค้า',
-                                          style: TextStyle(
-                                            color: Colors
-                                                .black, // สีข้อความของปุ่ม
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                DataCell(Center(
-                                  child: InkWell(
-                                    onTap: () {
-                                      // นำทางไปหน้า DetailPage เมื่อกดปุ่ม
-                                      Get.to(() => const RiderviewPage());
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical:
-                                              8), // กำหนดขนาด padding ให้ปุ่ม
-                                      decoration: BoxDecoration(
-                                        color:
-                                            Color(0xFF67B562), // สีพื้นหลังปุ่ม
-                                        borderRadius: BorderRadius.circular(
-                                            20), // ทำให้มุมปุ่มโค้งมน
-                                      ),
-                                      child: Text(
-                                        'รับงาน',
-                                        style: TextStyle(
-                                          color:
-                                              Colors.black, // สีข้อความของปุ่ม
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                )),
-                              ],
-                            ),
-                            DataRow(
-                              cells: <DataCell>[
-                                DataCell(
-                                  Center(
-                                    child: InkWell(
-                                      onTap: () {
-                                        // เมื่อกดที่ชื่อให้แสดงข้อมูลทั้งหมดใน dialog
-                                        showDialog(
-                                          context: context,
-                                          barrierDismissible:
-                                              true, // สามารถกดที่พื้นหลังเพื่อปิด dialog ได้
-                                          builder: (BuildContext context) {
-                                            return const AlertDialog(
-                                              title: Text('ข้อมูลของ RPG'),
-                                              content: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text('ชื่อ: Barret M82A1'),
-                                                  Text(
-                                                      'รายละเอียด: ...'), // เพิ่มรายละเอียดที่ต้องการแสดง
-                                                  // สามารถเพิ่ม Text widget อื่น ๆ ได้ตามต้องการ
-                                                ],
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      },
-                                      child: const SizedBox(
-                                        width: 50,
-                                        child: Text(
-                                          'RPG',
+                                          data.name,
                                           overflow: TextOverflow.ellipsis,
                                           softWrap: false,
                                         ),
@@ -295,7 +209,7 @@ class _RiderPageState extends State<RiderPage> {
                                               20), // ทำให้มุมปุ่มโค้งมน
                                         ),
                                         child: Text(
-                                          'รอไรเดอร์มารับสินค้า',
+                                          data.status,
                                           style: TextStyle(
                                             color: Colors
                                                 .black, // สีข้อความของปุ่ม
@@ -305,11 +219,17 @@ class _RiderPageState extends State<RiderPage> {
                                     ),
                                   ),
                                 ),
+                                DataCell(Center(child: Text(data.senderName))),
+                                DataCell(Text(data.senderPhone)),
                                 DataCell(Center(
                                   child: InkWell(
                                     onTap: () {
                                       // นำทางไปหน้า DetailPage เมื่อกดปุ่ม
-                                      Get.to(() => const RiderviewPage());
+                                      setState(() {
+                                        this.receiverId = data.receiverId.toString();
+                                        // log(receiverId);
+                                      });
+                                      riderview();
                                     },
                                     child: Container(
                                       padding: EdgeInsets.symmetric(
@@ -333,8 +253,8 @@ class _RiderPageState extends State<RiderPage> {
                                   ),
                                 )),
                               ],
-                            ),
-                          ],
+                            );
+                          }).toList(),
                         ),
                       ),
                     ],
@@ -384,5 +304,93 @@ class _RiderPageState extends State<RiderPage> {
         ],
       ),
     );
+  }
+
+  Future<void> GetApiEndpoint() async {
+    Configguration.getConfig().then(
+      (value) {
+        log('MainUserGet API ');
+        // log(value['apiEndpoint']);
+        setState(() {
+          url = value['apiEndpoint'];
+        });
+      },
+    ).catchError((err) {
+      log(err.toString());
+    });
+  }
+
+  Future<void> getUserDataFromStorage() async {
+    final storage = GetStorage();
+
+    final senderId = storage.read('UserID');
+    // final userUsername = storage.read('Username');
+    // final userEmail = storage.read('Email');
+    // final userImage = storage.read('Image');
+
+    // log(userUsername);
+
+    setState(() {
+      this.senderId = senderId;
+      // this.userUsername = userUsername;
+      // this.userEmail = userEmail;
+      // this.userImage = userImage;
+      // log(userId);
+    });
+  }
+
+  Future<void> fetchRider() async {
+    _showLoadingDialog();
+    try {
+      final res = await http.get(
+        Uri.parse("$url/rider"),
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+      );
+
+      if (res.statusCode == 200) {
+        // ตรวจสอบว่า API ส่งกลับสถานะ 200 หรือไม่
+        setState(() {
+          RiderGetResponses = riderGetResponseFromJson(res.body);
+        });
+        log('aaaaaaaa: $senderId');
+      } else {
+        log("Failed to load users: ${res.statusCode}");
+      }
+
+      final data = json.decode(res.body);
+
+      // log(res.body);
+    } catch (e) {
+      log("Error: $e");
+    }
+    Navigator.of(context).pop();
+  }
+
+  void _showLoadingDialog() {
+    // โลหด
+    showDialog(
+      context: context,
+      barrierDismissible: false, // ป้องกันการปิด dialog โดยคลิกที่ด้านนอก
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent, // พื้นหลังโปร่งใส
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(), // แสดงวงกลมหมุน
+              SizedBox(height: 15),
+              Text("Loading...", style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void riderview() async{
+    final storage = GetStorage();
+    await storage.write('ReceiverID',receiverId.toString());
+    
+    await Get.to(() => const RiderviewPage());
   }
 }
