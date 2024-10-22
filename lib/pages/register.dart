@@ -6,7 +6,6 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rider/config/config.dart';
 import 'package:rider/pages/login.dart';
@@ -16,7 +15,6 @@ import 'package:http/http.dart' as http;
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:path/path.dart' as path; // ใช้ alias เพื่อหลีกเลี่ยงปัญหา
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -36,9 +34,7 @@ class _RegisterPageState extends State<RegisterPage> {
   int selectedIndex = 0; // ตัวแปรเพื่อเก็บค่า index
   int _fillIndex = 0; // กำหนดค่าเริ่มต้น
   final ImagePicker picker = ImagePicker();
-  File? image; // ตัวแปรเพื่อเก็บภาพที่เลือก
-  var userId;
-  String imageUrl = '';
+  XFile? image; // ตัวแปรเพื่อเก็บภาพที่เลือก
 
   TextEditingController usernameCtl = TextEditingController();
   TextEditingController emailCtl = TextEditingController();
@@ -53,15 +49,21 @@ class _RegisterPageState extends State<RegisterPage> {
 
   String url = '';
   bool _showMap = false;
-  @override
+
   void initState() {
     super.initState();
-    _initialize();
-  }
+    //Configguration config = Configguration();
 
-  Future<void> _initialize() async {
-    await GetApiEndpoint();
-    await getUserDataFromStorage();
+    Configguration.getConfig().then(
+      (value) {
+        log(value['apiEndpoint']);
+        setState(() {
+          url = value['apiEndpoint'];
+        });
+      },
+    ).catchError((err) {
+      log(err.toString());
+    });
   }
 
   @override
@@ -88,7 +90,16 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   // วงกลมที่มีไอคอนกล้องถ่ายรูปตรงกลาง
                   GestureDetector(
-                    onTap: _pickImage,
+                    onTap: () async {
+                      image =
+                          await picker.pickImage(source: ImageSource.gallery);
+                      if (image != null) {
+                        log(image!.path.toString());
+                        setState(() {});
+                      } else {
+                        log('No Image');
+                      }
+                    },
                     child: Container(
                       width: 150,
                       height: 150,
@@ -396,9 +407,155 @@ class _RegisterPageState extends State<RegisterPage> {
                                                         .white), // สีข้อความที่กรอก
                                               ),
                                             ),
+                                            SizedBox(
+                                              height: 10,
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16.0),
+                                              child: SizedBox(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.8, // ปรับขนาดตามหน้าจอ
+                                                child: Column(
+                                                  children: [
+                                                    SizedBox(
+                                                      height: 50,
+                                                      child: TextField(
+                                                        controller: positionCtl,
+                                                        readOnly:
+                                                            true, // Read-only เพื่อให้ผู้ใช้คลิกเลือกตำแหน่งจากแผนที่เท่านั้น
+                                                        decoration:
+                                                            InputDecoration(
+                                                          labelText:
+                                                              "Selected Position",
+                                                          labelStyle:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .white),
+                                                          prefixIcon:
+                                                              const Icon(
+                                                                  Icons.map,
+                                                                  color: Colors
+                                                                      .white),
+                                                          enabledBorder:
+                                                              OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        30.0),
+                                                            borderSide:
+                                                                const BorderSide(
+                                                                    color: Colors
+                                                                        .white),
+                                                          ),
+                                                          focusedBorder:
+                                                              OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        30.0),
+                                                            borderSide:
+                                                                const BorderSide(
+                                                                    color: Colors
+                                                                        .white),
+                                                          ),
+                                                        ),
+                                                        style: const TextStyle(
+                                                            color:
+                                                                Colors.white),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 10),
+//---------------------------------------------------------- M A P -------------------------------------
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          _showMap =
+                                                              !_showMap; // สลับการแสดง/ซ่อนแผนที่
+                                                        });
+                                                      },
+                                                      child: Text(
+                                                        _showMap
+                                                            ? 'แสดงน้อยลง'
+                                                            : 'เลือกที่อยู่ของคุณ',
+                                                        style: TextStyle(
+                                                          color: Colors
+                                                              .white, // สีของข้อความ
+                                                          decoration: TextDecoration
+                                                              .underline, // ใส่เส้นใต้ข้อความ
+                                                          decorationThickness:
+                                                              2.0, // ความหนาของเส้นใต้ (ปรับเปลี่ยนได้)
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                    // การแสดงแผนที่ (แสดงเมื่อ _showMap == true)
+                                                    Visibility(
+                                                      visible: _showMap,
+                                                      child: SizedBox(
+                                                        height:
+                                                            300, // ขนาดความสูงของแผนที่
+                                                        child: FlutterMap(
+                                                          mapController:
+                                                              mapController,
+                                                          options: MapOptions(
+                                                            initialCenter:
+                                                                latLng,
+                                                            initialZoom: 15.0,
+                                                            onTap: (tapPosition,
+                                                                point) {
+                                                              setState(() {
+                                                                latLng =
+                                                                    point; // อัปเดตตำแหน่งที่เลือก
+                                                                positionCtl
+                                                                        .text =
+                                                                    'Lat: ${point.latitude}, Lng: ${point.longitude}'; // แสดงค่าตำแหน่งใน TextField
+                                                                mapController.move(
+                                                                    latLng,
+                                                                    mapController
+                                                                        .camera
+                                                                        .zoom);
+                                                              });
+                                                            },
+                                                          ),
+                                                          children: [
+                                                            TileLayer(
+                                                              urlTemplate:
+                                                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                                              userAgentPackageName:
+                                                                  'com.example.app',
+                                                              maxNativeZoom: 19,
+                                                            ),
+                                                            MarkerLayer(
+                                                              markers: [
+                                                                Marker(
+                                                                  point: latLng,
+                                                                  width: 40,
+                                                                  height: 40,
+                                                                  child: const Icon(
+                                                                      Icons
+                                                                          .location_pin,
+                                                                      color: Colors
+                                                                          .red),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+//---------------------------------------------------------- M A P -------------------------------------
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
+
                                       //-------------------------------------------------------------------------------------------------
                                       Visibility(
                                         visible: _fillIndex == 1,
@@ -455,120 +612,6 @@ class _RegisterPageState extends State<RegisterPage> {
                                         ),
                                       ),
                                       //-------------------------------------------------------------------------------------------------
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                child: SizedBox(
-                                  width: MediaQuery.of(context).size.width *
-                                      0.8, // ปรับขนาดตามหน้าจอ
-                                  child: Column(
-                                    children: [
-                                      SizedBox(
-                                        height: 50,
-                                        child: TextField(
-                                          controller: positionCtl,
-                                          readOnly:
-                                              true, // Read-only เพื่อให้ผู้ใช้คลิกเลือกตำแหน่งจากแผนที่เท่านั้น
-                                          decoration: InputDecoration(
-                                            labelText: "Selected Position",
-                                            labelStyle: const TextStyle(
-                                                color: Colors.white),
-                                            prefixIcon: const Icon(Icons.map,
-                                                color: Colors.white),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(30.0),
-                                              borderSide: const BorderSide(
-                                                  color: Colors.white),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(30.0),
-                                              borderSide: const BorderSide(
-                                                  color: Colors.white),
-                                            ),
-                                          ),
-                                          style: const TextStyle(
-                                              color: Colors.white),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      // ปุ่มกดเพื่อเปิด/ปิดแผนที่
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            _showMap =
-                                                !_showMap; // สลับการแสดง/ซ่อนแผนที่
-                                          });
-                                        },
-                                        child: Text(
-                                          _showMap
-                                              ? 'แสดงน้อยลง'
-                                              : 'เลือกที่อยู่ของคุณ',
-                                          style: TextStyle(
-                                            color: Colors.white, // สีของข้อความ
-                                            decoration: TextDecoration
-                                                .underline, // ใส่เส้นใต้ข้อความ
-                                            decorationThickness:
-                                                2.0, // ความหนาของเส้นใต้ (ปรับเปลี่ยนได้)
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      // การแสดงแผนที่ (แสดงเมื่อ _showMap == true)
-                                      Visibility(
-                                        visible: _showMap,
-                                        child: SizedBox(
-                                          height: 300, // ขนาดความสูงของแผนที่
-                                          child: FlutterMap(
-                                            mapController: mapController,
-                                            options: MapOptions(
-                                              initialCenter: latLng,
-                                              initialZoom: 15.0,
-                                              onTap: (tapPosition, point) {
-                                                setState(() {
-                                                  latLng =
-                                                      point; // อัปเดตตำแหน่งที่เลือก
-                                                  positionCtl.text =
-                                                      'Lat: ${point.latitude}, Lng: ${point.longitude}'; // แสดงค่าตำแหน่งใน TextField
-                                                  mapController.move(
-                                                      latLng,
-                                                      mapController
-                                                          .camera.zoom);
-                                                });
-                                              },
-                                            ),
-                                            children: [
-                                              TileLayer(
-                                                urlTemplate:
-                                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                                userAgentPackageName:
-                                                    'com.example.app',
-                                                maxNativeZoom: 19,
-                                              ),
-                                              MarkerLayer(
-                                                markers: [
-                                                  Marker(
-                                                    point: latLng,
-                                                    width: 40,
-                                                    height: 40,
-                                                    child: const Icon(
-                                                        Icons.location_pin,
-                                                        color: Colors.red),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
                                     ],
                                   ),
                                 ),
@@ -960,7 +1003,6 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    await _uploadFile();
     // เรียกใช้ getCoordinates เพื่อแปลงที่อยู่เป็นละติจูดและลองจิจูด
     // final coordinates = await getCoordinates(addressCtl.text);
     // log('Latitude: ${coordinates['latitude']}, Longitude: ${coordinates['longitude']}');
@@ -971,7 +1013,8 @@ class _RegisterPageState extends State<RegisterPage> {
       'Email': emailCtl.text,
       'Password': passCtl.text,
       'Phone': phoneCtl.text,
-      'Image': imageUrl,
+      'Image':
+          "https://i.pinimg.com/736x/0d/b5/da/0db5da143c7bf4ace9d3635bd4e35fcc.jpg",
       'Address': addressCtl.text,
       'GPS_Latitude': latLng.latitude, // ใช้ค่าละติจูดที่ได้
       'GPS_Longitude': latLng.longitude, // ใช้ค่าลองจิจูดที่ได้
@@ -1059,14 +1102,13 @@ class _RegisterPageState extends State<RegisterPage> {
       _showFlushbar(context, 'รหัสผ่านไม่ตรงกัน', 'Passwords do not match');
       return;
     }
-    await _uploadFile();
-
     Map<String, dynamic> userData = {
       'Username': usernameCtl.text,
       'Email': emailCtl.text,
       'Password': passCtl.text,
       'Phone': phoneCtl.text,
-      'Image': imageUrl,
+      'Image':
+          "https://i.pinimg.com/736x/0d/b5/da/0db5da143c7bf4ace9d3635bd4e35fcc.jpg",
       'VehicleRegistration': carregCtl.text,
     };
     showDialog(
@@ -1156,144 +1198,6 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
-  Future<void> _pickImage() async {
-    // แสดงตัวเลือกให้ผู้ใช้เลือกระหว่างกล้องและแกลอรี่
-    showModalBottomSheet(
-      context: context, // ใช้ BuildContext ที่ถูกต้องจาก Flutter
-      builder: (BuildContext modalContext) {
-        // เปลี่ยนชื่อที่นี่
-        return Container(
-          height: 150,
-          child: Column(
-            children: [
-              ListTile(
-                leading: Icon(Icons.camera),
-                title: Text('Take a Photo'),
-                onTap: () async {
-                  Navigator.of(modalContext).pop(); // ปิด modal
-                  await _selectImage(ImageSource.camera); // เลือกภาพจากกล้อง
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.photo),
-                title: Text('Choose from Gallery'),
-                onTap: () async {
-                  Navigator.of(modalContext).pop(); // ปิด modal
-                  await _selectImage(ImageSource.gallery); // เลือกภาพจากแกลอรี่
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _selectImage(ImageSource source) async {
-    final pickedFile = await picker.pickImage(source: source);
-    if (pickedFile != null) {
-      setState(() {
-        image = File(pickedFile.path);
-      });
-      // await _uploadFile(); // เรียกใช้งานฟังก์ชันอัปโหลดไฟล์หลังเลือกภาพ
-    }
-  }
-
-  Future<void> _uploadFile() async {
-    if (image == null) {
-      print('No file selected!');
-      return;
-    }
-
-    try {
-      // สร้าง MultipartRequest โดยใช้ $url
-      var request = http.MultipartRequest('POST', Uri.parse("$url/upload/"));
-      String fileName = path.basename(image!.path);
-
-      // เพิ่มไฟล์ไปยัง request
-      request.files.add(await http.MultipartFile.fromPath(
-        'file', // ชื่อฟิลด์ที่เซิร์ฟเวอร์คาดหวัง
-        image!.path,
-        // filename: fileName, // ตั้งชื่อไฟล์ตามที่เซิร์ฟเวอร์ต้องการ
-      ));
-
-      // ส่ง request
-      final response = await request.send();
-
-      // รับข้อมูลที่ตอบกลับ
-      final responseData = await http.Response.fromStream(response);
-      print('Response body: ${responseData.body}');
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(responseData.body);
-        log(data.toString()); // แสดงข้อมูลที่ได้รับ
-        setState(() {
-          imageUrl = data['url'].toString();
-        });
-
-        // // ตรวจสอบว่า 'url' มีอยู่ใน data หรือไม่
-        // if (data.containsKey('url')) {
-        //   final res = await http.post(
-        //     Uri.parse("$url/upload/update"),
-        //     headers: {"Content-Type": "application/json; charset=utf-8"},
-        //     body:
-        //         jsonEncode({"UserID": userId, "Image": data['url'].toString()}),
-        //   );
-
-        //   if (res.statusCode == 200) {
-        //     log("Upload Firebase");
-        //     final storage = GetStorage();
-        //     await storage.write('Image', data['url'].toString() ?? '');
-        //   }
-        // } else {
-        //   print('Error: URL not found in response');
-        // }
-
-        print('File uploaded successfully: $data');
-      } else {
-        print('Error uploading file: ${response.reasonPhrase}');
-      }
-    } catch (e) {
-      print('Error occurred while uploading file: $e');
-    }
-  }
-
-  Future<void> GetApiEndpoint() async {
-    Configguration.getConfig().then(
-      (value) {
-        log('MainUserGet API ');
-        // log(value['apiEndpoint']);
-        setState(() {
-          url = value['apiEndpoint'];
-        });
-      },
-    ).catchError((err) {
-      log(err.toString());
-    });
-  }
-
-  Future<void> getUserDataFromStorage() async {
-    final storage = GetStorage();
-
-    final userId = storage.read('UserID');
-    // final userUsername = storage.read('Username');
-    // final userEmail = storage.read('Email');
-    final userImage = storage.read('Image');
-
-    // log(userUsername);
-
-    setState(() {
-      // this.userId = userId;
-      // this.userUsername = userUsername;
-      // this.userEmail = userEmail;
-      // this.userImage = userImage;
-      // log(userId);
-    });
-  }
-}
-
-
-
   // Future<Map<String, double>> getCoordinates(String address) async {
   //   try {
   //     // แทนที่ช่องว่างในที่อยู่ด้วย '%20'
@@ -1313,4 +1217,4 @@ class _RegisterPageState extends State<RegisterPage> {
   //     }; // ส่งค่าพิกัดผิดเมื่อเกิดข้อผิดพลาด
   //   }
   // }
-
+}
