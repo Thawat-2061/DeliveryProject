@@ -50,6 +50,8 @@ class _ReceiverPageState extends State<ReceiverPage> {
 
   String url = '';
   var senderId;
+  var riderId;
+  var orderId;
 
   @override
   void initState() {
@@ -268,7 +270,17 @@ class _ReceiverPageState extends State<ReceiverPage> {
                                   child: InkWell(
                                     onTap: () {
                                       // นำทางไปยังหน้า DetailPage พร้อมส่งค่า productId
-                                      Get.to(() => DetailPage());
+                                      if (data.status != 'รอไรเดอร์') {
+                                        setState(() {
+                                          this.riderId =
+                                              data.riderId.toString();
+                                          this.orderId =
+                                              data.orderId.toString();
+                                        });
+                                        seeDetail();
+                                      } else {
+                                        log('กำลังรอไรเดอร์มารับออเดอร์ของคุณอยู่');
+                                      }
                                     },
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
@@ -524,5 +536,24 @@ class _ReceiverPageState extends State<ReceiverPage> {
         );
       },
     );
+  }
+
+  void seeDetail() async {
+    final storage = GetStorage();
+    await storage.write('RiderID', riderId.toString());
+    await storage.write('SenderID', senderId.toString());
+    await storage.write('OrderID', orderId.toString());
+
+    // try {
+    //   final response = await http.post(
+    //     Uri.parse("$url/login/rider"),
+    //     headers: {"Content-Type": "application/json; charset=utf-8"},
+    //     body: jsonEncode({"RiderID": }),
+    //   );
+    //   } catch (e) {
+    //   print('Error during login: $e');
+    // }
+
+    Get.to(() => DetailPage());
   }
 }

@@ -52,6 +52,7 @@ class _SenderPageState extends State<SenderPage> {
   String url = '';
   var senderId;
   var riderId;
+  var orderId;
 
   @override
   void initState() {
@@ -310,6 +311,8 @@ class _SenderPageState extends State<SenderPage> {
                                         setState(() {
                                           this.riderId =
                                               data.riderId.toString();
+                                          this.orderId =
+                                              data.orderId.toString();
                                         });
                                         seeDetail();
                                       } else {
@@ -576,6 +579,7 @@ class _SenderPageState extends State<SenderPage> {
     final storage = GetStorage();
     await storage.write('RiderID', riderId.toString());
     await storage.write('SenderID', senderId.toString());
+    await storage.write('OrderID', orderId.toString());
 
     // try {
     //   final response = await http.post(

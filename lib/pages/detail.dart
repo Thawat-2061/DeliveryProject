@@ -7,7 +7,10 @@ import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:rider/config/config.dart';
 import 'package:rider/model/response/GetResponseUser.dart';
-import 'package:rider/model/response/RiderGetRes.dart';
+import 'package:rider/model/response/OrderGetRes.dart';
+import 'package:rider/model/response/RiderPostRes.dart';
+// import 'package:rider/model/response/RiderGetRes.dart';
+import 'package:rider/model/response/SenderGetResponse.dart';
 import 'package:rider/pages/addOrder.dart';
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
@@ -32,11 +35,12 @@ class _DetailPageState extends State<DetailPage> {
   String url = '';
   var riderId;
   var senderId;
+  var orderId;
 
   List<dynamic> riderData = [];
-  List<GetResponseUser> GetResponsesUser = [];
+  List<OrderGetResponse> OrderGetResponses = [];
 
-  List<RiderGetResponse> RiderGetResponses = [];
+  List<RiderPostResponse> RiderPostResponses = [];
 
   LatLng latLng = LatLng(13.7378, 100.5504); // พิกัดเริ่มต้น (กรุงเทพฯ)
   LatLng destinationLatLng = LatLng(
@@ -73,6 +77,7 @@ class _DetailPageState extends State<DetailPage> {
     await GetApiEndpoint();
     await getUserDataFromStorage();
     getRiderMet();
+    fetchUsers();
   }
 
 //-----------------------------------------------------------
@@ -96,177 +101,189 @@ class _DetailPageState extends State<DetailPage> {
               color: const Color.fromARGB(255, 227, 131, 102),
               borderRadius: radius),
           child: Center(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 5.0),
-                  child: Container(
-                    width: 50,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(
-                          144, 158, 158, 158), // สีพื้นหลังของ Container
-                      borderRadius: BorderRadius.circular(10), // ทำให้ขอบโค้ง
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5.0),
+                    child: Container(
+                      width: 50,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(
+                            144, 158, 158, 158), // สีพื้นหลังของ Container
+                        borderRadius: BorderRadius.circular(10), // ทำให้ขอบโค้ง
+                      ),
                     ),
                   ),
-                ),
-                Column(
-                  children: RiderGetResponses.asMap().entries.map((entry) {
-                    var rider = entry
-                        .value; // ข้อมูลแต่ละ entry ที่ได้จากฐานข้อมูลหรือ API
+                  Column(
+                    children: RiderPostResponses.asMap().entries.map((entry) {
+                      var rider = entry
+                          .value; // ข้อมูลแต่ละ entry ที่ได้จากฐานข้อมูลหรือ API
 
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle, // กำหนดให้เป็นวงกลม
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.5), // สีของเงา
-                              spreadRadius: 5, // ขยายขนาดเงา
-                              blurRadius: 9, // ทำให้เงาเบลอ
-                              offset: Offset(0, 3), // ตำแหน่งของเงา
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 20.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle, // กำหนดให้เป็นวงกลม
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    Colors.black.withOpacity(0.5), // สีของเงา
+                                spreadRadius: 5, // ขยายขนาดเงา
+                                blurRadius: 9, // ทำให้เงาเบลอ
+                                offset: Offset(0, 3), // ตำแหน่งของเงา
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: Image.network(
+                              rider.image,
+                              width: 150.0, // กำหนดความกว้างของวงกลม
+                              height: 150.0, // กำหนดความสูงของวงกลม
+                              fit: BoxFit.cover, // ปรับขนาดภาพให้พอดีกับวงกลม
                             ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: Image.network(
-                            rider.image,
-                            width: 150.0, // กำหนดความกว้างของวงกลม
-                            height: 150.0, // กำหนดความสูงของวงกลม
-                            fit: BoxFit.cover, // ปรับขนาดภาพให้พอดีกับวงกลม
                           ),
                         ),
+                      );
+                    }).toList(),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Column(
+                    children: [
+                      Column(
+                        children:
+                            RiderPostResponses.asMap().entries.map((entry) {
+                          var rider = entry.value;
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10.0),
+                                child: Divider(
+                                  color: Colors.black,
+                                  thickness: 1.0,
+                                  indent: 20,
+                                  endIndent: 20,
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 50, top: 10),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Rider name: ${rider.username}',
+                                      style: TextStyle(fontSize: 16),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 50, top: 5),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Phone number: ${rider.phone}',
+                                      style: TextStyle(fontSize: 16),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 50, top: 5),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Car Registration: ${rider.vehicleRegistration}',
+                                      style: TextStyle(fontSize: 16),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
                       ),
-                    );
-                  }).toList(),
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Column(
-                  children: [
-                    Column(
-                      children: RiderGetResponses.asMap().entries.map((entry) {
-                        var rider = entry.value;
-                        return Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10.0),
-                              child: Divider(
-                                color: Colors.black,
-                                thickness: 1.0,
-                                indent: 20,
-                                endIndent: 20,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 50, top: 10),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    'Rider name: ${rider.username}',
-                                    style: TextStyle(fontSize: 16),
-                                  )
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 50, top: 5),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    'Phone number: ${rider.phone}',
-                                    style: TextStyle(fontSize: 16),
-                                  )
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 50, top: 5),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    'Car Registration: ${rider.vehicleRegistration}',
-                                    style: TextStyle(fontSize: 16),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-                    Column(
-                      children: [
-                        Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10.0),
-                              child: Divider(
-                                color: Colors.black,
-                                thickness: 1.0,
-                                indent: 20,
-                                endIndent: 20,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 50, top: 10),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    'Status Order:',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                  Text(
-                                    ' กำลังส่งสินค้า',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        color: const Color.fromARGB(
-                                            255, 238, 74, 25),
-                                        fontWeight: FontWeight.bold),
-                                  )
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 50, top: 5),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    'Receiver name: ลุงสมยศ พจมารทรายทอง',
-                                    style: TextStyle(fontSize: 16),
-                                  )
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10.0),
-                              child: Divider(
-                                color: Colors.black,
-                                thickness: 1.0,
-                                indent: 20,
-                                endIndent: 20,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 50, top: 10),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    'Sender name: Aumza55+',
-                                    style: TextStyle(fontSize: 16),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ],
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10.0),
+                        child: Divider(
+                          color: Colors.black,
+                          thickness: 1.0,
+                          indent: 20,
+                          endIndent: 20,
                         ),
-                      ],
-                    ),
-                  ],
-                )
-              ],
+                      ),
+                      Column(
+                        children:
+                            OrderGetResponses.asMap().entries.map((entry) {
+                          var data = entry.value;
+                          return Column(
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 50, top: 10),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Status Order:',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    Text(
+                                      '${data.status}',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          color: const Color.fromARGB(
+                                              255, 238, 74, 25),
+                                          fontWeight: FontWeight.bold),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 50, top: 5),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Receiver name: ${data.customerName}',
+                                      style: TextStyle(fontSize: 16),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10.0),
+                                child: Divider(
+                                  color: Colors.black,
+                                  thickness: 1.0,
+                                  indent: 20,
+                                  endIndent: 20,
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 50, top: 10),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Sender name: ${data.senderName}',
+                                      style: TextStyle(fontSize: 16),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  )
+                ],
+              ),
             ),
           ),
         ),
@@ -474,6 +491,8 @@ class _DetailPageState extends State<DetailPage> {
 
     final riderId = storage.read('RiderID');
     final senderId = storage.read('SenderID');
+    final orderId = storage.read('OrderID');
+
     // final userEmail = storage.read('Email');
     // final userImage = storage.read('Image');
 
@@ -482,6 +501,8 @@ class _DetailPageState extends State<DetailPage> {
     setState(() {
       this.riderId = riderId;
       this.senderId = senderId;
+      this.orderId = orderId;
+
       // this.userEmail = userEmail;
       // this.userImage = userImage;
       // log(userId);
@@ -498,7 +519,7 @@ class _DetailPageState extends State<DetailPage> {
       if (response.statusCode == 200) {
         // เมื่อดึงข้อมูลสำเร็จให้ใช้ setState
         setState(() {
-          RiderGetResponses = riderGetResponseFromJson(
+          RiderPostResponses = riderPostResponseFromJson(
               response.body); // แปลง JSON และอัปเดตตัวแปร riders
         });
       } else {
@@ -518,14 +539,14 @@ class _DetailPageState extends State<DetailPage> {
 
     try {
       final res = await http.get(
-        Uri.parse("$url/profile/user/$senderId"),
+        Uri.parse("$url/order/detail/$orderId"),
         headers: {"Content-Type": "application/json; charset=utf-8"},
       );
 
       if (res.statusCode == 200) {
         // ตรวจสอบว่า API ส่งกลับสถานะ 200 หรือไม่
         setState(() {
-          GetResponsesUser = getResponseUserFromJson(res.body);
+          OrderGetResponses = orderGetResponseFromJson(res.body);
         });
       } else {
         log("Failed to load users: ${res.statusCode}");

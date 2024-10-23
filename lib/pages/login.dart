@@ -421,7 +421,10 @@ class _LoginPageState extends State<LoginPage> {
     await storage.write('UserID', user['UserID']?.toString() ?? '');
     await storage.write('Username', user['Username']?.toString() ?? '');
     await storage.write('Email', user['Email']?.toString() ?? '');
+    await storage.write('UserPhone', user['Phone']?.toString() ?? '');
     await storage.write('Image', user['Image']?.toString() ?? '');
+    await storage.write('Address', user['Address']?.toString() ?? '');
+    await storage.write('UserPassword', user['Password']?.toString() ?? '');
   }
 
 // ฟังก์ชันนำผู้ใช้ไปยังหน้า SenderPage
@@ -464,7 +467,7 @@ class _LoginPageState extends State<LoginPage> {
           if (passwordMatch) {
             final storage = GetStorage();
             await storage.write('RiderID', rider['RiderID'].toString());
-            await storage.write('Username', rider['Username'].toString());
+            await storage.write('RiderUsername', rider['Username'].toString());
             await storage.write('Email', rider['Email'].toString());
 
             Navigator.of(context).pop();

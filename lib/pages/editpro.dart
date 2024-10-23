@@ -54,6 +54,15 @@ class _EditproPageState extends State<EditproPage> {
   String url = '';
   var userId;
   var userImage;
+  var userName;
+  var userEmail;
+  var userPhone;
+  var userAddress;
+
+  TextEditingController usernameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
 
   @override
   void initState() {
@@ -64,6 +73,10 @@ class _EditproPageState extends State<EditproPage> {
   Future<void> _initialize() async {
     await GetApiEndpoint();
     await getUserDataFromStorage();
+    usernameController.text = userName;
+    emailController.text = userEmail;
+    phoneController.text = userPhone;
+    addressController.text = userAddress;
   }
 
   @override
@@ -141,8 +154,14 @@ class _EditproPageState extends State<EditproPage> {
                               SizedBox(
                                 height: 60,
                                 child: TextField(
-                                  onChanged: (value) => username =
-                                      value, // เก็บค่าที่กรอกในตัวแปร username
+                                  controller:
+                                      usernameController, // ใช้ controller สำหรับคุมค่าใน TextField
+                                  onChanged: (value) {
+                                    // หากต้องการอัปเดตค่า username ขณะพิมพ์
+                                    setState(() {
+                                      username = value;
+                                    });
+                                  },
 
                                   decoration: InputDecoration(
                                     labelText:
@@ -190,9 +209,14 @@ class _EditproPageState extends State<EditproPage> {
                               SizedBox(
                                 height: 50,
                                 child: TextField(
-                                  onChanged: (value) => phone =
-                                      value, // เก็บค่าที่กรอกในตัวแปร phone
-
+                                  controller:
+                                      phoneController, // ใช้ controller สำหรับคุมค่าใน TextField
+                                  onChanged: (value) {
+                                    // หากต้องการอัปเดตค่า username ขณะพิมพ์
+                                    setState(() {
+                                      phone = value;
+                                    });
+                                  },
                                   decoration: InputDecoration(
                                     labelText:
                                         "Phone Number", // ข้อความ "Phone Number" ภายใน TextField
@@ -240,9 +264,14 @@ class _EditproPageState extends State<EditproPage> {
                               SizedBox(
                                 height: 50,
                                 child: TextField(
-                                  onChanged: (value) => email =
-                                      value, // เก็บค่าที่กรอกในตัวแปร email
-
+                                  controller:
+                                      emailController, // ใช้ controller สำหรับคุมค่าใน TextField
+                                  onChanged: (value) {
+                                    // หากต้องการอัปเดตค่า username ขณะพิมพ์
+                                    setState(() {
+                                      email = value;
+                                    });
+                                  },
                                   decoration: InputDecoration(
                                     labelText:
                                         "Email", // ข้อความ "Email" ภายใน TextField
@@ -289,9 +318,14 @@ class _EditproPageState extends State<EditproPage> {
                               SizedBox(
                                 height: 50,
                                 child: TextField(
-                                  onChanged: (value) => address =
-                                      value, // เก็บค่าที่กรอกในตัวแปร address
-
+                                  controller:
+                                      addressController, // ใช้ controller สำหรับคุมค่าใน TextField
+                                  onChanged: (value) {
+                                    // หากต้องการอัปเดตค่า username ขณะพิมพ์
+                                    setState(() {
+                                      address = value;
+                                    });
+                                  },
                                   decoration: InputDecoration(
                                     labelText:
                                         "Your Address", // ข้อความ "Your Address" ภายใน TextField
@@ -548,22 +582,34 @@ class _EditproPageState extends State<EditproPage> {
     final storage = GetStorage();
 
     final userId = storage.read('UserID');
-    // final userUsername = storage.read('Username');
-    // final userEmail = storage.read('Email');
+    final userName = storage.read('Username');
+    final userEmail = storage.read('Email');
     final userImage = storage.read('Image');
+    final userPhone = storage.read('UserPhone');
+    final userAddress = storage.read('Address');
 
     // log(userUsername);
 
     setState(() {
       this.userId = userId;
-      // this.userUsername = userUsername;
-      // this.userEmail = userEmail;
+      this.userName = userName;
+      this.userEmail = userEmail;
       this.userImage = userImage;
+      this.userPhone = userPhone;
+      this.userAddress = userAddress;
+
       // log(userId);
     });
   }
 
   void editPro() async {
     await _uploadFile();
+  }
+
+  @override
+  void dispose() {
+    // ทำลาย controller เมื่อไม่ได้ใช้งานแล้ว
+    usernameController.dispose();
+    super.dispose();
   }
 }

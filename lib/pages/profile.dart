@@ -7,6 +7,7 @@ import 'package:get/get_navigation/get_navigation.dart';
 import 'package:rider/config/config.dart';
 import 'package:rider/pages/editpro.dart';
 import 'package:rider/pages/login.dart';
+import 'package:rider/pages/pass.dart';
 import 'package:rider/pages/receiver.dart';
 import 'package:rider/pages/sender.dart';
 import 'dart:developer' as developer;
@@ -174,7 +175,7 @@ class _ProdilePageState extends State<ProfilePage> {
                     InkWell(
                       onTap: () {
                         // เมื่อกดปุ่มนี้ให้ไปที่หน้า LoginPage
-                        // Get.to(() => const LoginPage());
+                        Get.to(() => const PassPage());
                       },
                       child: Container(
                         width: MediaQuery.of(context).size.width * 0.8,

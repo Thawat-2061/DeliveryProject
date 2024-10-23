@@ -15,7 +15,7 @@ class SenderGetResponse {
   int orderId;
   int senderId;
   int receiverId;
-  int? riderId;
+  dynamic riderId;
   String name;
   String detail;
   String status;
@@ -24,10 +24,12 @@ class SenderGetResponse {
   String customerPhone;
   double customerLat;
   double customerLong;
+  String customerImage;
+  String senderImage;
   String senderName;
   String senderPhone;
-  int senderLat;
-  int senderLong;
+  double senderLat;
+  double senderLong;
 
   SenderGetResponse({
     required this.orderId,
@@ -42,6 +44,8 @@ class SenderGetResponse {
     required this.customerPhone,
     required this.customerLat,
     required this.customerLong,
+    required this.customerImage,
+    required this.senderImage,
     required this.senderName,
     required this.senderPhone,
     required this.senderLat,
@@ -62,10 +66,12 @@ class SenderGetResponse {
         customerPhone: json["CustomerPhone"],
         customerLat: json["CustomerLat"]?.toDouble(),
         customerLong: json["CustomerLong"]?.toDouble(),
+        customerImage: json["CustomerImage"],
+        senderImage: json["SenderImage"],
         senderName: json["SenderName"],
         senderPhone: json["SenderPhone"],
-        senderLat: json["SenderLat"],
-        senderLong: json["SenderLong"],
+        senderLat: json["SenderLat"]?.toDouble(),
+        senderLong: json["SenderLong"]?.toDouble(),
       );
 
   Map<String, dynamic> toJson() => {
@@ -81,6 +87,8 @@ class SenderGetResponse {
         "CustomerPhone": customerPhone,
         "CustomerLat": customerLat,
         "CustomerLong": customerLong,
+        "CustomerImage": customerImage,
+        "SenderImage": senderImage,
         "SenderName": senderName,
         "SenderPhone": senderPhone,
         "SenderLat": senderLat,

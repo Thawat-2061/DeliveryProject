@@ -1,17 +1,17 @@
 // To parse this JSON data, do
 //
-//     final riderGetResponse = riderGetResponseFromJson(jsonString);
+//     final riderPostResponse = riderPostResponseFromJson(jsonString);
 
 import 'dart:convert';
 
-List<RiderGetResponse> riderGetResponseFromJson(String str) =>
-    List<RiderGetResponse>.from(
-        json.decode(str).map((x) => RiderGetResponse.fromJson(x)));
+List<RiderPostResponse> riderPostResponseFromJson(String str) =>
+    List<RiderPostResponse>.from(
+        json.decode(str).map((x) => RiderPostResponse.fromJson(x)));
 
-String riderGetResponseToJson(List<RiderGetResponse> data) =>
+String riderPostResponseToJson(List<RiderPostResponse> data) =>
     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
-class RiderGetResponse {
+class RiderPostResponse {
   int riderId;
   String username;
   String email;
@@ -20,7 +20,7 @@ class RiderGetResponse {
   String image;
   String vehicleRegistration;
 
-  RiderGetResponse({
+  RiderPostResponse({
     required this.riderId,
     required this.username,
     required this.email,
@@ -30,8 +30,8 @@ class RiderGetResponse {
     required this.vehicleRegistration,
   });
 
-  factory RiderGetResponse.fromJson(Map<String, dynamic> json) =>
-      RiderGetResponse(
+  factory RiderPostResponse.fromJson(Map<String, dynamic> json) =>
+      RiderPostResponse(
         riderId: json["RiderID"],
         username: json["Username"],
         email: json["Email"],
