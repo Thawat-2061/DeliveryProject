@@ -79,8 +79,7 @@ class _CreatePageState extends State<CreatePage> {
   List<UserGetRespon> UserGetResponses = [];
 
   TextEditingController searchController = TextEditingController();
-  List<UserGetRespon> filteredUsers =
-      []; // สร้าง List สำหรับเก็บข้อมูลที่กรองแล้ว
+  List<UserGetRespon> filteredUsers = [];
   // List<UserGetRespon> allUsers = UserGetResponses;
 
   String detail = '';
