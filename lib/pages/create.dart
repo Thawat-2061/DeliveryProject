@@ -106,14 +106,15 @@ class _CreatePageState extends State<CreatePage> {
 
   void filterUsers(String searchQuery) {
     setState(() {
-      // กรองเฉพาะเมื่อมีข้อความในช่องค้นหา
-      if (searchQuery.isEmpty) {
-        filteredUsers =
-            UserGetResponses; // ถ้าไม่มีการค้นหา ให้แสดงผู้ใช้ทั้งหมด
+      // กรองเฉพาะเมื่อมีข้อความในช่องค้นหา หรือเมื่อไม่ได้โฟกัสอยู่ในช่องค้นหา
+      if (searchQuery.isEmpty || !FocusScope.of(context).hasFocus) {
+        // ถ้าไม่มีการค้นหา หรือไม่ได้ใช้งานช่องค้นหา ให้แสดงผู้ใช้ทั้งหมด
+        filteredUsers = UserGetResponses;
       } else {
-        filteredUsers = UserGetResponses.where((user) =>
-                user.phone.contains(searchQuery)) // กรองข้อมูลตามเบอร์โทรศัพท์
-            .toList();
+        // กรองข้อมูลตามเบอร์โทรศัพท์
+        filteredUsers =
+            UserGetResponses.where((user) => user.phone.contains(searchQuery))
+                .toList();
       }
     });
   }
