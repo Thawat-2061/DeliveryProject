@@ -49,6 +49,7 @@ class _RiderPageState extends State<RiderPage> {
   var senderId;
   var senderImage;
   var receiverImage;
+  var orderId;
 
   var riderImage;
 
@@ -204,7 +205,7 @@ class _RiderPageState extends State<RiderPage> {
                                     child: InkWell(
                                       onTap: () {
                                         // นำทางไปหน้า DetailPage เมื่อกดปุ่ม
-                                        Get.to(() => const DetailPage());
+                                        // Get.to(() => const DetailPage());
                                       },
                                       child: Container(
                                         padding: EdgeInsets.symmetric(
@@ -243,6 +244,8 @@ class _RiderPageState extends State<RiderPage> {
                                         this.receiverImage =
                                             data.customerImage.toString();
                                         this.riderImage = data.image.toString();
+                                        this.orderId = data.orderId.toString();
+
                                         // this.riderID = riderID;
 
                                         // log('rider: $riderID');
@@ -444,6 +447,7 @@ class _RiderPageState extends State<RiderPage> {
     await storage.write('SenderID', senderId.toString());
     await storage.write('SenderImage', senderImage.toString());
     await storage.write('ReceiverImage', receiverImage.toString());
+    await storage.write('OrderID', orderId.toString());
 
     // await storage.write('RiderID',riderID.toString());
 

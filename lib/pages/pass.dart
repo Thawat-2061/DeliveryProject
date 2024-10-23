@@ -48,7 +48,7 @@ class _PassPageState extends State<PassPage> {
 
   TextEditingController oldpassCtl = TextEditingController();
   TextEditingController passCtl = TextEditingController();
-  TextEditingController compassCtl = TextEditingController();
+  TextEditingController conpassCtl = TextEditingController();
   bool _isObscured = true; // สถานะซ่อนรหัสผ่าน
   var userId;
   var userPass;
@@ -223,7 +223,7 @@ class _PassPageState extends State<PassPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextField(
-                        controller: compassCtl, // เก็บค่าที่กรอกในตัวแปร pass
+                        controller: conpassCtl, // เก็บค่าที่กรอกในตัวแปร pass
                         keyboardType: TextInputType.visiblePassword,
                         obscureText: true, // ซ่อนข้อความที่กรอก
                         decoration: InputDecoration(
@@ -400,7 +400,7 @@ class _PassPageState extends State<PassPage> {
                 ),
                 TextButton(
                     onPressed: () async {
-                      passChange(context, oldpassCtl, passCtl, compassCtl);
+                      passChange(context, oldpassCtl, passCtl, conpassCtl);
 
                       // ปิด dialog และไปที่หน้าถัดไป
                       Navigator.of(context).pop(); // ปิด dialog
@@ -435,52 +435,56 @@ class _PassPageState extends State<PassPage> {
         passCtl.text.isEmpty ||
         conpassCtl.text.isEmpty) {
       log('Please fill all the fields');
+      return; // Exit if any field is empty
     }
+
+    // Check if the old password matches the stored password
     final passwordMatch = BCrypt.checkpw(oldpassCtl.text, userPass);
-    if (passwordMatch) {
-      log("Passmatch");
-      return;
+    log('Password match: $passwordMatch');
+    if (!passwordMatch) {
+      log("Old password does not match the stored password");
+      return; // Exit if the password does not match
     }
-    // Validate passwords match
+
+    // Validate if new passwords match
     if (passCtl.text != conpassCtl.text) {
-      log("not match");
-
-      return;
+      log("New passwords do not match");
+      return; // Exit if new passwords do not match
     }
-    // เรียกใช้ getCoordinates เพื่อแปลงที่อยู่เป็นละติจูดและลองจิจูด
-    // final coordinates = await getCoordinates(addressCtl.text);
-    // log('Latitude: ${coordinates['latitude']}, Longitude: ${coordinates['longitude']}');
-
-    // สร้างข้อมูลผู้ใช้
-    Map<String, dynamic> passData = {
-      'UserID': userId,
-      'Password': passCtl.text,
-    };
+    _showLoadingDialog();
 
     try {
-      // ทำการส่ง POST request ไปยัง API
+      // Send PUT request to the API
+      log('Sending PUT request...');
       final response = await http.put(
-        Uri.parse('$url/user/passUser'),
-        headers: {
-          'Content-Type': 'application/json', // กำหนด headers ให้เป็น JSON
-        },
-        body: jsonEncode(passData), // แปลงข้อมูลเป็น JSON ก่อนส่ง
+        Uri.parse("$url/login/passUser"),
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+        body: jsonEncode({"UserID": userId, "Password": passCtl.text}),
       );
 
-      Navigator.of(context).pop();
+      log('Response status: ${response.statusCode}');
+      log('Response body: ${response.body}');
 
-      if (response.statusCode == 201) {
-        log('Password: ' + passCtl.text);
-        log('Comfirmppass ' + compassCtl.text);
-        Get.to(() => const ProfilePage()); // เปลี่ยนไปที่หน้าถัดไป
+      if (response.statusCode == 200) {
+        log('Password changed successfully!');
+        // final storage = GetStorage();
+        // await storage.write('UserPassword', passCtl.text.toString());
+        // await getUserDataFromStorage();
+        await Get.to(() => const ProfilePage()); // Navigate to the next page
+
+        // Check if the widget is still mounted before navigating
+        if (!context.mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Password changed successfully!')),
         );
       } else if (response.statusCode == 409) {
         log('Username already exists');
-      } else {}
+      } else {
+        log('Error: ${response.statusCode} - ${response.body}');
+      }
     } catch (e) {
-      // ปิด progress dialog
+      log('An error occurred: $e'); // Log any errors that occur during the request
     }
   }
 
@@ -515,5 +519,26 @@ class _PassPageState extends State<PassPage> {
       // this.userImage = userImage;
       // log(userId);
     });
+  }
+
+  void _showLoadingDialog() {
+    // โลหด
+    showDialog(
+      context: context,
+      barrierDismissible: false, // ป้องกันการปิด dialog โดยคลิกที่ด้านนอก
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent, // พื้นหลังโปร่งใส
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(), // แสดงวงกลมหมุน
+              SizedBox(height: 15),
+              Text("Loading...", style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

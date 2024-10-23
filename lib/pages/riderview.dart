@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
@@ -15,6 +16,7 @@ import 'package:rider/pages/ridergps.dart';
 import 'package:rider/pages/riprofile.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RiderviewPage extends StatefulWidget {
   const RiderviewPage({super.key});
@@ -25,13 +27,18 @@ class RiderviewPage extends StatefulWidget {
 
 class _RiderviewPageState extends State<RiderviewPage> {
   MapController mapController = MapController();
+  var db = FirebaseFirestore.instance;
+  StreamSubscription<DocumentSnapshot>? _subscription;
 
   LatLng sen = LatLng(0, 0); // พิกัดเริ่มต้น (กรุงเทพฯ)
   LatLng re = LatLng(0, 0); // จุดปลายทาง (ตัวอย่างพิกัด)
 
   // LatLng newana = LatLng(
   //     16.246825669508297, 103.25199289277295); // จุดปลายทาง (ตัวอย่างพิกัด
-      LatLng ri = LatLng(0, 0) ; // ตัวแปรสำหรับเก็บตำแหน่งปัจจุบัน
+  LatLng ri = LatLng(0, 0); // ตัวแปรสำหรับเก็บตำแหน่งปัจจุบัน
+  double riderLat = 0;
+  double riderLong = 0;
+  var riderId;
 
   final PanelController _panelController = PanelController();
 //----------------------------------------------------------------------------------------------------
@@ -41,6 +48,8 @@ class _RiderviewPageState extends State<RiderviewPage> {
   List<SenderGetResponse> SenderGetResponses = [];
 
   String url = '';
+  String status = '';
+  var orderId;
 
   @override
   void initState() {
@@ -224,12 +233,6 @@ class _RiderviewPageState extends State<RiderviewPage> {
                                   endIndent: 20,
                                 ),
                               ),
-                              ClipOval(
-                                child: Image.network(
-                                  receiverImage, // แสดงรูป receiverImage แทน Icon
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
                             ],
                           );
                         }).toList(), // แปลง map เป็น list ของ widgets
@@ -298,17 +301,6 @@ class _RiderviewPageState extends State<RiderviewPage> {
                   40, // ความสูงตอนที่ยังไม่ดึงขึ้น (สามารถปรับเป็นค่าที่ต้องการได้)
               body: Column(
                 children: [
-                  FilledButton(
-                      onPressed: () async {
-                        // var postion = await _determinePosition();
-                        // log('${postion.latitude} ${postion.longitude}');
-
-                        // latLng = LatLng(postion.latitude, postion.longitude);
-                        // mapController.move(latLng, mapController.camera.zoom);
-
-                        // setState(() {});
-                      },
-                      child: const Text('Get Location')),
                   Expanded(
                     child: Container(
                       width: double.infinity, // ขนาดความกว้างที่ต้องการ
@@ -367,34 +359,31 @@ class _RiderviewPageState extends State<RiderviewPage> {
                                   ),
                                 ),
                               ),
-                               Marker(
-            point: ri, // ใช้ตำแหน่งปัจจุบัน
-            width: 40,
-            height: 40,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.green, width: 2),
-              ),
-              child: ClipOval(
-                child: Image.network(
-                  riderImage, // แสดงรูป senderImage แทน Icon
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
+                              Marker(
+                                point: ri, // ใช้ตำแหน่งปัจจุบัน
+                                width: 40,
+                                height: 40,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: Colors.green, width: 2),
+                                  ),
+                                  child: ClipOval(
+                                    child: Image.network(
+                                      riderImage, // แสดงรูป senderImage แทน Icon
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
-
                           PolylineLayer(
                             polylines: [
                               Polyline(
-                                points: [
-                                  sen,
-                                  ri
-                                ], // ลิสต์ของจุดเส้นทาง
+                                points: [sen, ri], // ลิสต์ของจุดเส้นทาง
                                 color: Colors.blue,
                                 strokeWidth: 4.0,
                               ),
@@ -565,10 +554,12 @@ class _RiderviewPageState extends State<RiderviewPage> {
                 ),
                 TextButton(
                     onPressed: () {
+                      setState(() {
+                        status = 'ไรเดอร์รับงาน';
+                      });
+                      bowljob();
                       // ปิด dialog และไปที่หน้าถัดไป
-                      Navigator.of(context).pop(); // ปิด dialog
-                      Get.to(
-                          () => const RiderGPSPage()); // เปลี่ยนไปที่หน้าถัดไป
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content: Text('You have received this job!')),
@@ -595,14 +586,17 @@ class _RiderviewPageState extends State<RiderviewPage> {
       },
     );
   }
+
 //------------------------------------------------------------------------------------------------------------------------
-Future<void> _getCurrentLocation() async {
+  Future<void> _getCurrentLocation() async {
     try {
       Position position = await _determinePosition();
       setState(() {
-        ri = LatLng(position.latitude, position.longitude); // เซ็ตตำแหน่งที่อยู่ปัจจุบัน
+        ri = LatLng(position.latitude,
+            position.longitude); // เซ็ตตำแหน่งที่อยู่ปัจจุบัน
+        riderLat = position.latitude;
+        riderLong = position.longitude;
       });
-
     } catch (e) {
       // จัดการกรณีเกิดข้อผิดพลาด เช่น การไม่สามารถเข้าถึงตำแหน่งได้
       print(e);
@@ -634,6 +628,8 @@ Future<void> _getCurrentLocation() async {
     final receiverImage = storage.read('ReceiverImage');
 
     final riderImage = storage.read('RiderImage');
+    final orderId = storage.read('OrderID');
+    final riderId = storage.read('RiderID');
 
     // final userUsername = storage.read('Username');
     // final userEmail = storage.read('Email');
@@ -648,6 +644,8 @@ Future<void> _getCurrentLocation() async {
       this.receiverImage = receiverImage;
 
       this.riderImage = riderImage;
+      this.orderId = orderId;
+      this.riderId = riderId;
 
       // this.userUsername = userUsername;
       // this.userEmail = userEmail;
@@ -774,4 +772,75 @@ Future<void> _getCurrentLocation() async {
       },
     );
   }
+
+  void bowljob() async {
+    try {
+      // Send PUT request to the API
+      // log('Sending PUT request...');
+      final response = await http.put(
+        Uri.parse("$url/status/update"),
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+        body: jsonEncode(
+            {"OrderID": orderId, "RiderID": riderId, "Status": status}),
+      );
+
+      log('Response status: ${response.statusCode}');
+      log('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        var data = {
+          'latitude': riderLat,
+          'longitude': riderLong,
+          'Status': status,
+          'createAt': DateTime.timestamp()
+        };
+
+        db.collection('RealLocation').doc('RiderID: $riderId').set(data);
+        // log('Password changed successfully!');
+        // final storage = GetStorage();
+        // await storage.write('UserPassword', passCtl.text.toString());
+        // await getUserDataFromStorage();
+        // await Get.to(() => const ProfilePage()); // Navigate to the next page
+
+        // Check if the widget is still mounted before navigating
+        // if (!context.mounted) return;
+        Navigator.of(context).pop(); // ปิด dialog
+        Get.to(() => const RiderGPSPage()); // เปลี่ยนไปที่หน้าถัดไป
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Status Changed successfully!')),
+        );
+      } else if (response.statusCode == 409) {
+        log('Username already exists');
+      } else {
+        log('Error: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      log('An error occurred: $e'); // Log any errors that occur during the request
+    }
+  }
+
+  // void startRealtimeGet() {
+  //   final docRef = db.collection("RealLocation").doc('riderLocation');
+  //   _subscription = docRef.snapshots().listen(
+  //     (event) {
+  //       var data = event.data();
+  //       Get.snackbar(
+  //           "Data Updated", "Timestamp: ${data!['createAt'].toString()}");
+  //       Get.snackbar(
+  //         "Start Real-Time", // หัวข้อ
+  //         "This is a simple message without a title.", // ข้อความที่ต้องการแสดง
+  //         snackPosition: SnackPosition.BOTTOM, // ตำแหน่งของ snackbar
+  //         duration: Duration(seconds: 3), // ระยะเวลาในการแสดง snackbar
+  //       );
+  //       log("current data: ${event.data()}");
+  //     },
+  //     onError: (error) => log("Listen failed: $error"),
+  //   );
+  // }
+
+  // void stopRealtimeGet() {
+  //   _subscription?.cancel(); // ยกเลิกการฟังการเปลี่ยนแปลง
+  //   log("Stopped listening to real-time updates.");
+  // }
 }
