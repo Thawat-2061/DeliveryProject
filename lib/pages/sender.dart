@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:marquee/marquee.dart'; // นำเข้า package marquee
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -24,6 +27,13 @@ class SenderPage extends StatefulWidget {
 }
 
 class _SenderPageState extends State<SenderPage> {
+  MapController mapController = MapController();
+
+  //-----------------------------------------------------------------------------------------------------------------
+
+  LatLng sen = LatLng(0, 0); // พิกัดเริ่มต้น (กรุงเทพฯ)
+  LatLng re = LatLng(0, 0); // จุดปลายทาง (ตัวอย่างพิกัด)
+
   //-----------------------------------------------------------
   int _selectedIndex = 0;
   void _onItemTapped(int index) {
@@ -53,6 +63,9 @@ class _SenderPageState extends State<SenderPage> {
   var senderId;
   var riderId;
   var orderId;
+
+  var senderImage;
+  var receiverImage;
 
   @override
   void initState() {
@@ -165,42 +178,62 @@ class _SenderPageState extends State<SenderPage> {
                       );
                     }).toList(),
                   ),
-                  Container(
-                    width: MediaQuery.of(context).size.width * 0.9,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: FilledButton(
-                            onPressed: () {
-                              Get.to(() => const CreatePage());
-                            },
-                            style: FilledButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(
-                                  255, 48, 48, 48), // สีปุ่มเป็นสีเทา
-                              side: BorderSide(
-                                  color: Colors.white), // ขอบปุ่มเป็นสีขาว
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/images/iadd.png', // เส้นทางรูปภาพของคุณ
-                                  width: 20, // ขนาดไอคอน
-                                  height: 20,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 24.0),
+                        child: FilledButton(
+                          onPressed: () {
+                            Get.to(() => const CreatePage());
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color.fromARGB(
+                                255, 48, 48, 48), // สีปุ่มเป็นสีเทา
+                            side: BorderSide(
+                                color: Colors.white), // ขอบปุ่มเป็นสีขาว
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/images/iadd.png', // เส้นทางรูปภาพของคุณ
+                                width: 20, // ขนาดไอคอน
+                                height: 20,
+                              ),
+                              Text(
+                                "Create Order",
+                                style: TextStyle(
+                                  color: Colors.white, // สีตัวหนังสือเป็นสีขาว
                                 ),
-                                Text(
-                                  "Create Order",
-                                  style: TextStyle(
-                                    color:
-                                        Colors.white, // สีตัวหนังสือเป็นสีขาว
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 24.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            _showMapDialog(context); // เรียก method แสดง dialog
+                          },
+                          child: Row(
+                            children: [
+                              Text(
+                                'MAP',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Container(
+                                child: Icon(
+                                  Icons.map_sharp,
+                                  size: 40,
+                                ), // ใช้ icon แผนที่
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    ],
                   ),
                 ],
               ),
@@ -313,6 +346,11 @@ class _SenderPageState extends State<SenderPage> {
                                               data.riderId.toString();
                                           this.orderId =
                                               data.orderId.toString();
+                                          this.senderImage =
+                                              data.senderImage.toString();
+                                          this.receiverImage =
+                                              data.customerImage.toString();
+                                          // log('$receiverImage');
                                         });
                                         seeDetail();
                                       } else {
@@ -495,6 +533,13 @@ class _SenderPageState extends State<SenderPage> {
         // ตรวจสอบว่า API ส่งกลับสถานะ 200 หรือไม่
         setState(() {
           SenderGetResponses = senderGetResponseFromJson(res.body);
+
+          var user = SenderGetResponses.first; // สมมติว่าใช้ผู้ใช้งานคนแรก
+          sen = LatLng(
+              user.customerLat, user.customerLong); // ใช้ข้อมูล GPS จาก API
+          re = LatLng(
+              user.senderLat, user.senderLong); // จุดปลายทาง (ตัวอย่างพิกัด)
+
         });
         log('aaaaaaaa: $senderId');
       } else {
@@ -581,6 +626,9 @@ class _SenderPageState extends State<SenderPage> {
     await storage.write('SenderID', senderId.toString());
     await storage.write('OrderID', orderId.toString());
 
+    await storage.write('SenderImage', senderImage.toString());
+    await storage.write('ReceiverImage', receiverImage.toString());
+
     // try {
     //   final response = await http.post(
     //     Uri.parse("$url/login/rider"),
@@ -592,5 +640,119 @@ class _SenderPageState extends State<SenderPage> {
     // }
 
     Get.to(() => DetailPage());
+  }
+
+  void _showMapDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: true, // สามารถกดด้านนอกเพื่อปิดได้
+      builder: (BuildContext context) {
+        return Dialog(
+            backgroundColor: Colors.transparent, // ตั้งค่าพื้นหลังเป็นโปร่งใส
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Column(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: 400,
+                      child: FlutterMap(
+                        mapController: mapController,
+                        options: MapOptions(
+                          initialCenter: sen,
+                          initialZoom: 15.0,
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate:
+                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: 'com.example.app',
+                            maxNativeZoom: 19,
+                          ),
+                          MarkerLayer(
+                            markers:
+                                SenderGetResponses.asMap().entries.map((entry) {
+                              // Extract the latitude and longitude from each entry
+                              final double lat = entry.value.customerLat;
+                              final double long = entry.value.customerLong;
+
+                              // Create a Marker for each entry
+                              return Marker(
+                                point: LatLng(lat, long),
+                                width: 40,
+                                height: 40,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white, // สีพื้นหลัง
+                                    shape: BoxShape.circle, // ทำให้ขอบเป็นวงกลม
+                                    border: Border.all(
+                                        color: Colors.blue,
+                                        width: 2), // ขอบสีน้ำเงิน
+                                  ),
+                                  child: ClipOval(
+                                    child: Image.network(
+                                      entry.value
+                                          .customerImage, // แสดงรูป senderImage แทน Icon
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(), // Convert the map to a list of Markers
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
   }
 }

@@ -32,20 +32,38 @@ class DetailPage extends StatefulWidget {
 class _DetailPageState extends State<DetailPage> {
   MapController mapController = MapController();
 
+  //-----------------------------------------------------------------------------------------------------------------
+
+  LatLng sen =LatLng(0, 0); // พิกัดเริ่มต้น (กรุงเทพฯ)
+  LatLng re = LatLng(0, 0); // จุดปลายทาง (ตัวอย่างพิกัด)
+
+  //   LatLng latLng = LatLng(13.7378, 100.5504); // พิกัดเริ่มต้น (กรุงเทพฯ)
+  // LatLng destinationLatLng = LatLng(
+  //     16.246825669508297, 103.25199289277295); // จุดปลายทาง (ตัวอย่างพิกัด)
+
+  // LatLng newana = LatLng(
+  //     16.246825669508297, 103.25199289277295); // จุดปลายทาง (ตัวอย่างพิกัด
+      LatLng ri = LatLng(0, 0) ; // ตัวแปรสำหรับเก็บตำแหน่งปัจจุบัน
+
+  final PanelController _panelController = PanelController();
+  //-----------------------------------------------------------------------------------------------------------------
+
+
   String url = '';
   var riderId;
   var senderId;
   var orderId;
 
+   var senderImage;
+  var receiverImage;
+
   List<dynamic> riderData = [];
   List<OrderGetResponse> OrderGetResponses = [];
+  List<SenderGetResponse> SenderGetResponses = [];
 
   List<RiderPostResponse> RiderPostResponses = [];
 
-  LatLng latLng = LatLng(13.7378, 100.5504); // พิกัดเริ่มต้น (กรุงเทพฯ)
-  LatLng destinationLatLng = LatLng(
-      16.246825669508297, 103.25199289277295); // จุดปลายทาง (ตัวอย่างพิกัด)
-  //-----------------------------------------------------------
+  //-----------------------------------------------------------------------------------------------------------------
   int _selectedIndex = 0;
   void _onItemTapped(int index) {
     setState(() {
@@ -78,6 +96,7 @@ class _DetailPageState extends State<DetailPage> {
     await getUserDataFromStorage();
     getRiderMet();
     fetchUsers();
+    fetchSender();
   }
 
 //-----------------------------------------------------------
@@ -323,8 +342,8 @@ class _DetailPageState extends State<DetailPage> {
                   var postion = await _determinePosition();
                   log('${postion.latitude} ${postion.longitude}');
 
-                  latLng = LatLng(postion.latitude, postion.longitude);
-                  mapController.move(latLng, mapController.camera.zoom);
+                  sen = LatLng(postion.latitude, postion.longitude);
+                  mapController.move(sen, mapController.camera.zoom);
 
                   setState(() {});
                 },
@@ -335,7 +354,7 @@ class _DetailPageState extends State<DetailPage> {
                 child: FlutterMap(
                   mapController: mapController,
                   options: MapOptions(
-                    initialCenter: latLng,
+                    initialCenter: sen,
                     initialZoom: 15.0,
                   ),
                   children: [
@@ -347,33 +366,60 @@ class _DetailPageState extends State<DetailPage> {
                     ),
                     MarkerLayer(
                       markers: [
-                        Marker(
-                          point: latLng,
-                          width: 40,
-                          height: 40,
-                          child:
-                              Icon(Icons.motorcycle_sharp, color: Colors.red),
-                        ),
-                        Marker(
-                          point: destinationLatLng, // จุดปลายทาง
-                          width: 40,
-                          height: 40,
-                          child: Icon(Icons.location_pin, color: Colors.blue),
-                        ),
+                       Marker(
+                                point: sen,
+                                width: 40,
+                                height: 40,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white, // สีพื้นหลัง
+                                    shape: BoxShape.circle, // ทำให้ขอบเป็นวงกลม
+                                    border: Border.all(
+                                        color: Colors.red,
+                                        width: 2), // ขอบสีแดง
+                                  ),
+                                  child: ClipOval(
+                                    child: Image.network(
+                                      receiverImage, // แสดงรูป receiverImage แทน Icon
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Marker(
+                                point: re, // จุดปลายทาง
+                                width: 40,
+                                height: 40,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white, // สีพื้นหลัง
+                                    shape: BoxShape.circle, // ทำให้ขอบเป็นวงกลม
+                                    border: Border.all(
+                                        color: Colors.blue,
+                                        width: 2), // ขอบสีน้ำเงิน
+                                  ),
+                                  child: ClipOval(
+                                    child: Image.network(
+                                      senderImage, // แสดงรูป senderImage แทน Icon
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              ),
                       ],
                     ),
-                    PolylineLayer(
-                      polylines: [
-                        Polyline(
-                          points: [
-                            latLng,
-                            destinationLatLng
-                          ], // ลิสต์ของจุดเส้นทาง
-                          color: Colors.blue,
-                          strokeWidth: 4.0,
-                        ),
-                      ],
-                    ),
+                    // PolylineLayer(
+                    //   polylines: [
+                    //     Polyline(
+                    //       points: [
+                    //         latLng,
+                    //         destinationLatLng
+                    //       ], // ลิสต์ของจุดเส้นทาง
+                    //       color: Colors.blue,
+                    //       strokeWidth: 4.0,
+                    //     ),
+                    //   ],
+                    // ),
                   ],
                 ),
               ),
@@ -464,13 +510,14 @@ class _DetailPageState extends State<DetailPage> {
     return await Geolocator.getCurrentPosition();
   }
 
-  void locationNow() async {
-    var postion = await _determinePosition();
-    log('${postion.latitude} ${postion.longitude}');
-    latLng = LatLng(postion.latitude, postion.longitude);
-    mapController.move(latLng, mapController.camera.zoom);
-    setState(() {});
-  }
+  // void locationNow() async {
+  //   var postion = await _determinePosition();
+  //   log('${postion.latitude} ${postion.longitude}');
+  //   latLng = LatLng(postion.latitude, postion.longitude);
+  //   mapController.move(latLng, mapController.camera.zoom);
+  //   setState(() {});
+  // }
+//----------------------------------------------------------------------------------------------------------
 
   Future<void> GetApiEndpoint() async {
     Configguration.getConfig().then(
@@ -485,6 +532,7 @@ class _DetailPageState extends State<DetailPage> {
       log(err.toString());
     });
   }
+//----------------------------------------------------------------------------------------------------------
 
   Future<void> getUserDataFromStorage() async {
     final storage = GetStorage();
@@ -492,6 +540,9 @@ class _DetailPageState extends State<DetailPage> {
     final riderId = storage.read('RiderID');
     final senderId = storage.read('SenderID');
     final orderId = storage.read('OrderID');
+
+        final senderImage = storage.read('SenderImage');
+    final receiverImage = storage.read('ReceiverImage');
 
     // final userEmail = storage.read('Email');
     // final userImage = storage.read('Image');
@@ -503,11 +554,18 @@ class _DetailPageState extends State<DetailPage> {
       this.senderId = senderId;
       this.orderId = orderId;
 
+      this.senderImage = senderImage;
+      this.receiverImage = receiverImage;
+
+      log('senderrrrrrrrrrrrrrrr: $senderId');
+
+
       // this.userEmail = userEmail;
       // this.userImage = userImage;
       // log(userId);
     });
   }
+//----------------------------------------------------------------------------------------------------------
 
   void getRiderMet() async {
     try {
@@ -533,6 +591,7 @@ class _DetailPageState extends State<DetailPage> {
       print('Error during login: $e');
     }
   }
+//----------------------------------------------------------------------------------------------------------
 
   Future<void> fetchUsers() async {
     // แสดง dialog โหลดข้อมูล
@@ -560,6 +619,45 @@ class _DetailPageState extends State<DetailPage> {
       // ปิด Dialog หลังจากโหลดข้อมูลเสร็จ
     }
   }
+//----------------------------------------------------------------------------------------------------------
+  Future<void> fetchSender() async {
+    _showLoadingDialog();
+
+    try {
+      final res = await http.get(
+        Uri.parse("$url/user/show/$senderId"),
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+      );
+
+      if (res.statusCode == 200) {
+        // ตรวจสอบว่า API ส่งกลับสถานะ 200 หรือไม่
+        setState(() {
+          SenderGetResponses = senderGetResponseFromJson(res.body);
+          // อัพเดทพิกัดแผนที่จากข้อมูลใน API
+          var user = SenderGetResponses.first; // สมมติว่าใช้ผู้ใช้งานคนแรก
+          sen = LatLng(
+              user.customerLat, user.customerLong); // ใช้ข้อมูล GPS จาก API
+          re = LatLng(
+              user.senderLat, user.senderLong); // จุดปลายทาง (ตัวอย่างพิกัด)
+
+          mapController.move(sen, mapController.camera.zoom);
+        });
+        // log('aaaaaaaa: $sen');
+      } else {
+        log("Failed to load users: ${res.statusCode}");
+      }
+
+      final data = json.decode(res.body);
+
+      // log(res.body);
+    } catch (e) {
+      log("Error: $e");
+    } finally {
+      // ปิด Dialog หลังจากโหลดข้อมูลเสร็จ
+      Navigator.of(context).pop();
+    }
+  }
+//----------------------------------------------------------------------------------------------------------
 
   void _showLoadingDialog() {
     // โลหด
