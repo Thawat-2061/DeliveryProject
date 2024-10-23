@@ -54,6 +54,9 @@ class _SenderPageState extends State<SenderPage> {
   var riderId;
   var orderId;
 
+  var senderImage;
+  var receiverImage;
+
   @override
   void initState() {
     super.initState();
@@ -313,6 +316,11 @@ class _SenderPageState extends State<SenderPage> {
                                               data.riderId.toString();
                                           this.orderId =
                                               data.orderId.toString();
+                                          this.senderImage =
+                                              data.senderImage.toString();
+                                          this.receiverImage =
+                                              data.customerImage.toString();
+                                          // log('$receiverImage');
                                         });
                                         seeDetail();
                                       } else {
@@ -580,6 +588,9 @@ class _SenderPageState extends State<SenderPage> {
     await storage.write('RiderID', riderId.toString());
     await storage.write('SenderID', senderId.toString());
     await storage.write('OrderID', orderId.toString());
+
+    await storage.write('SenderImage', senderImage.toString());
+    await storage.write('ReceiverImage', receiverImage.toString());
 
     // try {
     //   final response = await http.post(
