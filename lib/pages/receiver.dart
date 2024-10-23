@@ -619,6 +619,7 @@ class _ReceiverPageState extends State<ReceiverPage> {
       barrierDismissible: true, // สามารถกดด้านนอกเพื่อปิดได้
       builder: (BuildContext context) {
         return Dialog(
+            backgroundColor: Colors.transparent, // ตั้งค่าพื้นหลังเป็นโปร่งใส
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0),
           ),
