@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:marquee/marquee.dart';
 import 'package:rider/config/config.dart';
 import 'package:rider/model/response/GetResponseUser.dart';
@@ -23,6 +26,13 @@ class ReceiverPage extends StatefulWidget {
 
 class _ReceiverPageState extends State<ReceiverPage> {
   //-----------------------------------------------------------
+  MapController mapController = MapController();
+
+  LatLng sen = LatLng(0, 0); // พิกัดเริ่มต้น (กรุงเทพฯ)
+  LatLng re = LatLng(0, 0); // จุดปลายทาง (ตัวอย่างพิกัด)
+
+  //-----------------------------------------------------------------------------------------------------------------
+
   int _selectedIndex = 1;
   void _onItemTapped(int index) {
     setState(() {
@@ -158,6 +168,38 @@ class _ReceiverPageState extends State<ReceiverPage> {
                     ),
                   );
                 }).toList(),
+              ),
+              Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 24.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            _showMapDialog(context); // เรียก method แสดง dialog
+                          },
+                          child: Row(
+                            children: [
+                              Text(
+                                'MAP',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Container(
+                                child: Icon(
+                                  Icons.map_sharp,
+                                  size: 40,
+                                ), // ใช้ icon แผนที่
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ],
               ),
               Expanded(
                 child: Card(
@@ -464,6 +506,12 @@ class _ReceiverPageState extends State<ReceiverPage> {
         // ตรวจสอบว่า API ส่งกลับสถานะ 200 หรือไม่
         setState(() {
           ReceiverGetResponses = receiverGetResponseFromJson(res.body);
+          var user = ReceiverGetResponses.first; // สมมติว่าใช้ผู้ใช้งานคนแรก
+          sen =
+              LatLng(user.senderLat, user.senderLong); // ใช้ข้อมูล GPS จาก API
+          re = LatLng(
+              user.senderLat, user.senderLong); // จุดปลายทาง (ตัวอย่างพิกัด)
+
         });
         log('aaaaaaaa: $senderId');
       } else {
@@ -563,5 +611,119 @@ class _ReceiverPageState extends State<ReceiverPage> {
     // }
 
     Get.to(() => DetailPage());
+  }
+
+  void _showMapDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: true, // สามารถกดด้านนอกเพื่อปิดได้
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Column(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: 400,
+                      child: FlutterMap(
+                        mapController: mapController,
+                        options: MapOptions(
+                          initialCenter: sen,
+                          initialZoom: 15.0,
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate:
+                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: 'com.example.app',
+                            maxNativeZoom: 19,
+                          ),
+                          MarkerLayer(
+                            markers: ReceiverGetResponses.asMap()
+                                .entries
+                                .map((entry) {
+                              // Extract the latitude and longitude from each entry
+                              final double lat = entry.value.senderLat;
+                              final double long = entry.value.senderLong;
+
+                              // Create a Marker for each entry
+                              return Marker(
+                                point: LatLng(lat, long),
+                                width: 40,
+                                height: 40,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white, // สีพื้นหลัง
+                                    shape: BoxShape.circle, // ทำให้ขอบเป็นวงกลม
+                                    border: Border.all(
+                                        color: Colors.blue,
+                                        width: 2), // ขอบสีน้ำเงิน
+                                  ),
+                                  child: ClipOval(
+                                    child: Image.network(
+                                      entry.value
+                                          .senderImage, // แสดงรูป senderImage แทน Icon
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(), // Convert the map to a list of Markers
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
   }
 }
