@@ -7,6 +7,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:rider/config/config.dart';
 import 'package:rider/model/response/RiderGetRespons.dart';
+import 'package:rider/model/response/RiderPostRes.dart';
 import 'package:rider/pages/detail.dart';
 import 'package:rider/pages/riderview.dart';
 import 'package:rider/pages/riprofile.dart';
@@ -40,10 +41,16 @@ class _RiderPageState extends State<RiderPage> {
 
 //-----------------------------------------------------------
   List<RiderGetResponse> RiderGetResponses = [];
+  List<RiderPostResponse> RiderPostResponses = [];
 
   String url = '';
-  var senderId;
+  var riderID;
   var receiverId;
+  var senderId;
+  var senderImage;
+  var receiverImage;
+
+  var riderImage;
 
   @override
   void initState() {
@@ -55,6 +62,7 @@ class _RiderPageState extends State<RiderPage> {
     await GetApiEndpoint();
     await getUserDataFromStorage();
 
+    getRiderMet();
     fetchRider();
   }
 
@@ -226,8 +234,18 @@ class _RiderPageState extends State<RiderPage> {
                                     onTap: () {
                                       // นำทางไปหน้า DetailPage เมื่อกดปุ่ม
                                       setState(() {
-                                        this.receiverId = data.receiverId.toString();
-                                        // log(receiverId);
+                                        this.receiverId =
+                                            data.receiverId.toString();
+                                        this.senderId =
+                                            data.senderId.toString();
+                                        this.senderImage =
+                                            data.senderImage.toString();
+                                        this.receiverImage =
+                                            data.customerImage.toString();
+                                        this.riderImage = data.image.toString();
+                                        // this.riderID = riderID;
+
+                                        // log('rider: $riderID');
                                       });
                                       riderview();
                                     },
@@ -323,7 +341,7 @@ class _RiderPageState extends State<RiderPage> {
   Future<void> getUserDataFromStorage() async {
     final storage = GetStorage();
 
-    final senderId = storage.read('UserID');
+    final riderId = storage.read('RiderID');
     // final userUsername = storage.read('Username');
     // final userEmail = storage.read('Email');
     // final userImage = storage.read('Image');
@@ -331,13 +349,14 @@ class _RiderPageState extends State<RiderPage> {
     // log(userUsername);
 
     setState(() {
-      this.senderId = senderId;
+      this.riderID = riderId;
       // this.userUsername = userUsername;
       // this.userEmail = userEmail;
       // this.userImage = userImage;
-      // log(userId);
+      log('riderID: $riderID');
     });
   }
+//----------------------------------------------------------------------------------------------------
 
   Future<void> fetchRider() async {
     _showLoadingDialog();
@@ -352,7 +371,7 @@ class _RiderPageState extends State<RiderPage> {
         setState(() {
           RiderGetResponses = riderGetResponseFromJson(res.body);
         });
-        log('aaaaaaaa: $senderId');
+        // log('aaaaaaaa: $riderID');
       } else {
         log("Failed to load users: ${res.statusCode}");
       }
@@ -365,6 +384,37 @@ class _RiderPageState extends State<RiderPage> {
     }
     Navigator.of(context).pop();
   }
+//----------------------------------------------------------------------------------------------------
+
+  void getRiderMet() async {
+    try {
+      final response = await http.post(
+        Uri.parse("$url/profile/rider"),
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+        body: jsonEncode({"RiderID": riderID}),
+      );
+      if (response.statusCode == 200) {
+        log(response.body);
+
+        setState(() {
+          // แปลง JSON และอัปเดตตัวแปร RiderGetResponses
+          RiderPostResponses = riderPostResponseFromJson(response.body);
+          RiderPostResponses.asMap().entries.map((entry) async {
+            var rider = entry.value;
+            final storage = GetStorage();
+            await storage.write('RiderImage', rider.image.toString());
+            // log(rider.image);
+          }).toList();
+        });
+      } else {
+        throw Exception('Failed to load riders');
+      }
+    } catch (e) {
+      print('Error during login: $e');
+    }
+  }
+
+//----------------------------------------------------------------------------------------------------
 
   void _showLoadingDialog() {
     // โลหด
@@ -386,11 +436,17 @@ class _RiderPageState extends State<RiderPage> {
       },
     );
   }
+//----------------------------------------------------------------------------------------------------
 
-  void riderview() async{
+  void riderview() async {
     final storage = GetStorage();
-    await storage.write('ReceiverID',receiverId.toString());
-    
+    await storage.write('ReceiverID', receiverId.toString());
+    await storage.write('SenderID', senderId.toString());
+    await storage.write('SenderImage', senderImage.toString());
+    await storage.write('ReceiverImage', receiverImage.toString());
+
+    // await storage.write('RiderID',riderID.toString());
+
     await Get.to(() => const RiderviewPage());
   }
 }

@@ -1,10 +1,15 @@
+import 'dart:convert';
 import 'dart:developer';
-
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:rider/config/config.dart';
+import 'package:rider/model/response/GetResponseUser.dart';
+import 'package:rider/model/response/SenderGetResponse.dart';
 import 'package:rider/pages/rider.dart';
 import 'package:rider/pages/ridergps.dart';
 import 'package:rider/pages/riprofile.dart';
@@ -21,10 +26,44 @@ class RiderviewPage extends StatefulWidget {
 class _RiderviewPageState extends State<RiderviewPage> {
   MapController mapController = MapController();
 
-  LatLng latLng = LatLng(13.7378, 100.5504); // พิกัดเริ่มต้น (กรุงเทพฯ)
-  LatLng destinationLatLng = LatLng(
-      16.246825669508297, 103.25199289277295); // จุดปลายทาง (ตัวอย่างพิกัด)
+  LatLng sen = LatLng(0, 0); // พิกัดเริ่มต้น (กรุงเทพฯ)
+  LatLng re = LatLng(0, 0); // จุดปลายทาง (ตัวอย่างพิกัด)
+
+  // LatLng newana = LatLng(
+  //     16.246825669508297, 103.25199289277295); // จุดปลายทาง (ตัวอย่างพิกัด
+      LatLng ri = LatLng(0, 0) ; // ตัวแปรสำหรับเก็บตำแหน่งปัจจุบัน
+
   final PanelController _panelController = PanelController();
+//----------------------------------------------------------------------------------------------------
+  List<GetResponseUser> GetResponsesUserReceiver = [];
+  List<GetResponseUser> GetResponsesUserSender = [];
+
+  List<SenderGetResponse> SenderGetResponses = [];
+
+  String url = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await GetApiEndpoint();
+    await getUserDataFromStorage();
+
+    fetchUsersReceiver();
+    fetchUserSender();
+    fetchSender();
+    _getCurrentLocation(); // เรียกฟังก์ชันเพื่อดึงตำแหน่งปัจจุบัน
+  }
+
+  var receiverId;
+  var senderId;
+  var senderImage;
+  var receiverImage;
+  var riderImage;
+//-----------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -63,120 +102,157 @@ class _RiderviewPageState extends State<RiderviewPage> {
                         height: 10,
                       ),
                       Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 30, top: 20),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'Address receiver:',
-                                  style: TextStyle(fontSize: 16),
-                                )
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 30, top: 5, right: 30),
-                            child: Row(
-                              children: [
-                                Flexible(
-                                  // Use Flexible to wrap long text
-                                  child: Text(
-                                    '199/96 ขามเรียง มหาวิทยาลัย มหาสารคาม 44150', // Fixed typo 'มหาวิทยาลับ' to 'มหาวิทยาลัย'
-                                    style: TextStyle(fontSize: 16),
-                                    softWrap:
-                                        true, // Allows text to wrap to the next line
-                                    overflow: TextOverflow
-                                        .visible, // Ensures the text doesn't overflow
-                                  ),
+                        children: GetResponsesUserReceiver.asMap()
+                            .entries
+                            .map((entry) {
+                          var user = entry
+                              .value; // ข้อมูลแต่ละ entry ที่ได้จากฐานข้อมูลหรือ API
+                          return Column(
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 30, top: 5),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Receiver name: ${user.username}',
+                                      style: TextStyle(fontSize: 16),
+                                    )
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10.0),
-                            child: Divider(
-                              color: Colors.grey,
-                              thickness: 1.0,
-                              indent: 20,
-                              endIndent: 20,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 30, top: 5),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'Receiver name:',
-                                  style: TextStyle(fontSize: 16),
-                                )
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 30, top: 5),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'ลุงสมยศ พจมารทรายทอง',
-                                  style: TextStyle(fontSize: 16),
-                                )
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10.0),
-                            child: Divider(
-                              color: Colors.grey,
-                              thickness: 1.0,
-                              indent: 20,
-                              endIndent: 20,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 30, top: 5),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'Phone number:',
-                                  style: TextStyle(fontSize: 16),
-                                )
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 30, top: 5),
-                            child: Row(
-                              children: [
-                                Text(
-                                  '0999999999',
-                                  style: TextStyle(fontSize: 16),
-                                )
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 30, top: 50),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'เดินทางด้วยมอเตอร์ไซค์',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFFECC838),
-                                  ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 30, top: 5),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Phone number: ${user.phone}',
+                                      style: TextStyle(fontSize: 16),
+                                    )
+                                  ],
                                 ),
-                                Image.asset(
-                                  'assets/images/cyc.png', // แสดงภาพจาก assets
-                                  width: 100, // กำหนดความกว้างของภาพ
-                                  height: 50, // กำหนดความสูงของภาพ
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 30, top: 5, right: 30),
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                      // Use Flexible to wrap long text
+                                      child: Text(
+                                        'Address receiver: ${user.address}', // Fixed typo 'มหาวิทยาลับ' to 'มหาวิทยาลัย'
+                                        style: TextStyle(fontSize: 16),
+                                        softWrap:
+                                            true, // Allows text to wrap to the next line
+                                        overflow: TextOverflow
+                                            .visible, // Ensures the text doesn't overflow
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10.0),
+                                child: Divider(
+                                  color: Colors.grey,
+                                  thickness: 1.0,
+                                  indent: 20,
+                                  endIndent: 20,
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(), // แปลง map เป็น list ของ widgets
+                      ),
+                      Column(
+                        children:
+                            GetResponsesUserSender.asMap().entries.map((entry) {
+                          var user = entry
+                              .value; // ข้อมูลแต่ละ entry ที่ได้จากฐานข้อมูลหรือ API
+                          return Column(
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 30, top: 5),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Receiver name: ${user.username}',
+                                      style: TextStyle(fontSize: 16),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 30, top: 5),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Phone number: ${user.phone}',
+                                      style: TextStyle(fontSize: 16),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 30, top: 5, right: 30),
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                      // Use Flexible to wrap long text
+                                      child: Text(
+                                        'Address receiver: ${user.address}', // Fixed typo 'มหาวิทยาลับ' to 'มหาวิทยาลัย'
+                                        style: TextStyle(fontSize: 16),
+                                        softWrap:
+                                            true, // Allows text to wrap to the next line
+                                        overflow: TextOverflow
+                                            .visible, // Ensures the text doesn't overflow
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10.0),
+                                child: Divider(
+                                  color: Colors.grey,
+                                  thickness: 1.0,
+                                  indent: 20,
+                                  endIndent: 20,
+                                ),
+                              ),
+                              ClipOval(
+                                child: Image.network(
+                                  receiverImage, // แสดงรูป receiverImage แทน Icon
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(), // แปลง map เป็น list ของ widgets
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 30, top: 50),
+                        child: Row(
+                          children: [
+                            Text(
+                              'เดินทางด้วยมอเตอร์ไซค์',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFFECC838),
+                              ),
                             ),
-                          ),
-                        ],
-                      )
+                            Image.asset(
+                              'assets/images/cyc.png', // แสดงภาพจาก assets
+                              width: 100, // กำหนดความกว้างของภาพ
+                              height: 50, // กำหนดความสูงของภาพ
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -224,13 +300,13 @@ class _RiderviewPageState extends State<RiderviewPage> {
                 children: [
                   FilledButton(
                       onPressed: () async {
-                        var postion = await _determinePosition();
-                        log('${postion.latitude} ${postion.longitude}');
+                        // var postion = await _determinePosition();
+                        // log('${postion.latitude} ${postion.longitude}');
 
-                        latLng = LatLng(postion.latitude, postion.longitude);
-                        mapController.move(latLng, mapController.camera.zoom);
+                        // latLng = LatLng(postion.latitude, postion.longitude);
+                        // mapController.move(latLng, mapController.camera.zoom);
 
-                        setState(() {});
+                        // setState(() {});
                       },
                       child: const Text('Get Location')),
                   Expanded(
@@ -239,7 +315,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
                       child: FlutterMap(
                         mapController: mapController,
                         options: MapOptions(
-                          initialCenter: latLng,
+                          initialCenter: sen,
                           initialZoom: 15.0,
                         ),
                         children: [
@@ -252,27 +328,72 @@ class _RiderviewPageState extends State<RiderviewPage> {
                           MarkerLayer(
                             markers: [
                               Marker(
-                                point: latLng,
+                                point: sen,
                                 width: 40,
                                 height: 40,
-                                child: Icon(Icons.motorcycle_sharp,
-                                    color: Colors.red),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white, // สีพื้นหลัง
+                                    shape: BoxShape.circle, // ทำให้ขอบเป็นวงกลม
+                                    border: Border.all(
+                                        color: Colors.red,
+                                        width: 2), // ขอบสีแดง
+                                  ),
+                                  child: ClipOval(
+                                    child: Image.network(
+                                      receiverImage, // แสดงรูป receiverImage แทน Icon
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
                               ),
                               Marker(
-                                point: destinationLatLng, // จุดปลายทาง
+                                point: re, // จุดปลายทาง
                                 width: 40,
                                 height: 40,
-                                child: Icon(Icons.location_pin,
-                                    color: Colors.blue),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white, // สีพื้นหลัง
+                                    shape: BoxShape.circle, // ทำให้ขอบเป็นวงกลม
+                                    border: Border.all(
+                                        color: Colors.blue,
+                                        width: 2), // ขอบสีน้ำเงิน
+                                  ),
+                                  child: ClipOval(
+                                    child: Image.network(
+                                      senderImage, // แสดงรูป senderImage แทน Icon
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
                               ),
+                               Marker(
+            point: ri, // ใช้ตำแหน่งปัจจุบัน
+            width: 40,
+            height: 40,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.green, width: 2),
+              ),
+              child: ClipOval(
+                child: Image.network(
+                  riderImage, // แสดงรูป senderImage แทน Icon
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
                             ],
                           ),
+
                           PolylineLayer(
                             polylines: [
                               Polyline(
                                 points: [
-                                  latLng,
-                                  destinationLatLng
+                                  sen,
+                                  ri
                                 ], // ลิสต์ของจุดเส้นทาง
                                 color: Colors.blue,
                                 strokeWidth: 4.0,
@@ -350,6 +471,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
       ),
     );
   }
+//------------------------------------------------------------------------------------------------------------------------
 
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
@@ -388,13 +510,14 @@ class _RiderviewPageState extends State<RiderviewPage> {
     return await Geolocator.getCurrentPosition();
   }
 
-  void locationNow() async {
-    var postion = await _determinePosition();
-    log('${postion.latitude} ${postion.longitude}');
-    latLng = LatLng(postion.latitude, postion.longitude);
-    mapController.move(latLng, mapController.camera.zoom);
-    setState(() {});
-  }
+  // void locationNow() async {
+  //   var postion = await _determinePosition();
+  //   log('${postion.latitude} ${postion.longitude}');
+  //   latLng = LatLng(postion.latitude, postion.longitude);
+  //   mapController.move(latLng, mapController.camera.zoom);
+  //   setState(() {});
+  // }
+//------------------------------------------------------------------------------------------------------------------------
 
   void _showConfirmationDialog(BuildContext context) {
     showDialog(
@@ -414,7 +537,8 @@ class _RiderviewPageState extends State<RiderviewPage> {
           ),
           content: Row(
             children: [
-              Icon(Icons.question_mark_rounded, color: Colors.amber), // เพิ่มไอคอนเตือน
+              Icon(Icons.question_mark_rounded,
+                  color: Colors.amber), // เพิ่มไอคอนเตือน
               SizedBox(width: 10), // ช่องว่างระหว่างไอคอนและข้อความ
               Expanded(
                 child: Text(
@@ -443,7 +567,8 @@ class _RiderviewPageState extends State<RiderviewPage> {
                     onPressed: () {
                       // ปิด dialog และไปที่หน้าถัดไป
                       Navigator.of(context).pop(); // ปิด dialog
-                      Get.to(() => const RiderGPSPage()); // เปลี่ยนไปที่หน้าถัดไป
+                      Get.to(
+                          () => const RiderGPSPage()); // เปลี่ยนไปที่หน้าถัดไป
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content: Text('You have received this job!')),
@@ -451,8 +576,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        color:
-                            Color(0xFF67B562), // สีพื้นหลังของ Container
+                        color: Color(0xFF67B562), // สีพื้นหลังของ Container
                         borderRadius: BorderRadius.circular(
                             24.0), // กำหนดความโค้งของ Container
                       ),
@@ -471,5 +595,183 @@ class _RiderviewPageState extends State<RiderviewPage> {
       },
     );
   }
+//------------------------------------------------------------------------------------------------------------------------
+Future<void> _getCurrentLocation() async {
+    try {
+      Position position = await _determinePosition();
+      setState(() {
+        ri = LatLng(position.latitude, position.longitude); // เซ็ตตำแหน่งที่อยู่ปัจจุบัน
+      });
 
+    } catch (e) {
+      // จัดการกรณีเกิดข้อผิดพลาด เช่น การไม่สามารถเข้าถึงตำแหน่งได้
+      print(e);
+    }
+  }
+//------------------------------------------------------------------------------------------------------------------------
+
+  Future<void> GetApiEndpoint() async {
+    Configguration.getConfig().then(
+      (value) {
+        log('MainUserGet API ');
+        // log(value['apiEndpoint']);
+        setState(() {
+          url = value['apiEndpoint'];
+        });
+      },
+    ).catchError((err) {
+      log(err.toString());
+    });
+  }
+//------------------------------------------------------------------------------------------------------------------------
+
+  Future<void> getUserDataFromStorage() async {
+    final storage = GetStorage();
+
+    final receiverId = storage.read('ReceiverID');
+    final senderId = storage.read('SenderID');
+    final senderImage = storage.read('SenderImage');
+    final receiverImage = storage.read('ReceiverImage');
+
+    final riderImage = storage.read('RiderImage');
+
+    // final userUsername = storage.read('Username');
+    // final userEmail = storage.read('Email');
+    // final userImage = storage.read('Image');
+
+    // log(userUsername);
+
+    setState(() {
+      this.receiverId = receiverId;
+      this.senderId = senderId;
+      this.senderImage = senderImage;
+      this.receiverImage = receiverImage;
+
+      this.riderImage = riderImage;
+
+      // this.userUsername = userUsername;
+      // this.userEmail = userEmail;
+      // this.userImage = userImage;
+      // log('sender: $riderImage');
+      log('sender: $senderId');
+      log('image: $riderImage');
+
+      log('recevei: $receiverId');
+    });
+  }
+//------------------------------------------------------------------------------------------------------------------------
+
+  Future<void> fetchUsersReceiver() async {
+    // แสดง dialog โหลดข้อมูล
+
+    try {
+      final res = await http.get(
+        Uri.parse("$url/profile/user/$receiverId"),
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+      );
+
+      if (res.statusCode == 200) {
+        setState(() {
+          GetResponsesUserReceiver = getResponseUserFromJson(res.body);
+
+          //  var user = GetResponsesUser.first; // สมมติว่าใช้ผู้ใช้งานคนแรก
+          //   latLng = LatLng(user.gpsLatitude, user.gpsLongitude); // ใช้ข้อมูล GPS จาก API
+          //   mapController.move(latLng,mapController.camera.zoom);
+        });
+      } else {
+        log("Failed to load users: ${res.statusCode}");
+      }
+    } catch (e) {
+      log("Error: $e");
+    } finally {
+      // ปิด Dialog หลังจากโหลดข้อมูลเสร็จ
+    }
+  }
+//------------------------------------------------------------------------------------------------------------------------
+
+  Future<void> fetchUserSender() async {
+    // แสดง dialog โหลดข้อมูล
+    _showLoadingDialog();
+
+    try {
+      final res = await http.get(
+        Uri.parse("$url/profile/user/$senderId"),
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+      );
+
+      if (res.statusCode == 200) {
+        setState(() {
+          GetResponsesUserSender = getResponseUserFromJson(res.body);
+
+          //  var user = GetResponsesUser.first; // สมมติว่าใช้ผู้ใช้งานคนแรก
+          //   latLng = LatLng(user.gpsLatitude, user.gpsLongitude); // ใช้ข้อมูล GPS จาก API
+          //   mapController.move(latLng,mapController.camera.zoom);
+        });
+      } else {
+        log("Failed to load users: ${res.statusCode}");
+      }
+    } catch (e) {
+      log("Error: $e");
+    } finally {
+      // ปิด Dialog หลังจากโหลดข้อมูลเสร็จ
+      Navigator.of(context).pop();
+    }
+  }
+
+//------------------------------------------------------------------------------------------------------------------------
+
+  Future<void> fetchSender() async {
+    try {
+      final res = await http.get(
+        Uri.parse("$url/user/show/$senderId"),
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+      );
+
+      if (res.statusCode == 200) {
+        // ตรวจสอบว่า API ส่งกลับสถานะ 200 หรือไม่
+        setState(() {
+          SenderGetResponses = senderGetResponseFromJson(res.body);
+          // อัพเดทพิกัดแผนที่จากข้อมูลใน API
+          var user = SenderGetResponses.first; // สมมติว่าใช้ผู้ใช้งานคนแรก
+          sen = LatLng(
+              user.customerLat, user.customerLong); // ใช้ข้อมูล GPS จาก API
+          re = LatLng(
+              user.senderLat, user.senderLong); // จุดปลายทาง (ตัวอย่างพิกัด)
+
+          mapController.move(sen, mapController.camera.zoom);
+        });
+        // log('aaaaaaaa: $receiverId');
+      } else {
+        log("Failed to load users: ${res.statusCode}");
+      }
+
+      final data = json.decode(res.body);
+
+      // log(res.body);
+    } catch (e) {
+      log("Error: $e");
+    }
+  }
+//------------------------------------------------------------------------------------------------------------------------
+
+  void _showLoadingDialog() {
+    // โลหด
+    showDialog(
+      context: context,
+      barrierDismissible: false, // ป้องกันการปิด dialog โดยคลิกที่ด้านนอก
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent, // พื้นหลังโปร่งใส
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(), // แสดงวงกลมหมุน
+              SizedBox(height: 15),
+              Text("Loading...", style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
