@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:rider/config/config.dart';
+import 'package:rider/model/response/GetResponseUser.dart';
+import 'package:rider/model/response/RiderGetRes.dart';
 import 'package:rider/pages/addOrder.dart';
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
@@ -13,6 +17,7 @@ import 'package:rider/pages/profile.dart';
 import 'package:rider/pages/receiver.dart';
 import 'package:rider/pages/sender.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:http/http.dart' as http;
 
 class DetailPage extends StatefulWidget {
   const DetailPage({super.key});
@@ -23,6 +28,15 @@ class DetailPage extends StatefulWidget {
 
 class _DetailPageState extends State<DetailPage> {
   MapController mapController = MapController();
+
+  String url = '';
+  var riderId;
+  var senderId;
+
+  List<dynamic> riderData = [];
+  List<GetResponseUser> GetResponsesUser = [];
+
+  List<RiderGetResponse> RiderGetResponses = [];
 
   LatLng latLng = LatLng(13.7378, 100.5504); // พิกัดเริ่มต้น (กรุงเทพฯ)
   LatLng destinationLatLng = LatLng(
@@ -47,6 +61,18 @@ class _DetailPageState extends State<DetailPage> {
 
       // เพิ่มกรณีอื่นๆ สำหรับการนำทางไปยังหน้าอื่นๆ ที่นี่
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await GetApiEndpoint();
+    await getUserDataFromStorage();
+    getRiderMet();
   }
 
 //-----------------------------------------------------------
@@ -84,134 +110,159 @@ class _DetailPageState extends State<DetailPage> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 20.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle, // กำหนดให้เป็นวงกลม
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.5), // สีของเงา
-                          spreadRadius: 5, // ขยายขนาดเงา
-                          blurRadius: 9, // ทำให้เงาเบลอ
-                          offset: Offset(0, 3), // ตำแหน่งของเงา
+                Column(
+                  children: RiderGetResponses.asMap().entries.map((entry) {
+                    var rider = entry
+                        .value; // ข้อมูลแต่ละ entry ที่ได้จากฐานข้อมูลหรือ API
+
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 20.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle, // กำหนดให้เป็นวงกลม
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.5), // สีของเงา
+                              spreadRadius: 5, // ขยายขนาดเงา
+                              blurRadius: 9, // ทำให้เงาเบลอ
+                              offset: Offset(0, 3), // ตำแหน่งของเงา
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/haha.jpg',
-                        width: 150.0, // กำหนดความกว้างของวงกลม
-                        height: 150.0, // กำหนดความสูงของวงกลม
-                        fit: BoxFit.cover, // ปรับขนาดภาพให้พอดีกับวงกลม
+                        child: ClipOval(
+                          child: Image.network(
+                            rider.image,
+                            width: 150.0, // กำหนดความกว้างของวงกลม
+                            height: 150.0, // กำหนดความสูงของวงกลม
+                            fit: BoxFit.cover, // ปรับขนาดภาพให้พอดีกับวงกลม
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  }).toList(),
                 ),
                 SizedBox(
                   height: 10,
                 ),
                 Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10.0),
-                      child: Divider(
-                        color: Colors.black,
-                        thickness: 1.0,
-                        indent: 20,
-                        endIndent: 20,
-                      ),
+                    Column(
+                      children: RiderGetResponses.asMap().entries.map((entry) {
+                        var rider = entry.value;
+                        return Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10.0),
+                              child: Divider(
+                                color: Colors.black,
+                                thickness: 1.0,
+                                indent: 20,
+                                endIndent: 20,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 50, top: 10),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Rider name: ${rider.username}',
+                                    style: TextStyle(fontSize: 16),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 50, top: 5),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Phone number: ${rider.phone}',
+                                    style: TextStyle(fontSize: 16),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 50, top: 5),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Car Registration: ${rider.vehicleRegistration}',
+                                    style: TextStyle(fontSize: 16),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      }).toList(),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 50, top: 10),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Rider name: Tripple DickBigXXX',
-                            style: TextStyle(fontSize: 16),
-                          )
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 50, top: 5),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Phone number: 0999999999',
-                            style: TextStyle(fontSize: 16),
-                          )
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 50, top: 5),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Car Registration: 6969',
-                            style: TextStyle(fontSize: 16),
-                          )
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10.0),
-                      child: Divider(
-                        color: Colors.black,
-                        thickness: 1.0,
-                        indent: 20,
-                        endIndent: 20,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 50, top: 10),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Status Order:',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          Text(
-                            ' กำลังส่งสินค้า',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: const Color.fromARGB(255, 238, 74, 25),
-                                fontWeight: FontWeight.bold),
-                          )
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 50, top: 5),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Receiver name: ลุงสมยศ พจมารทรายทอง',
-                            style: TextStyle(fontSize: 16),
-                          )
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10.0),
-                      child: Divider(
-                        color: Colors.black,
-                        thickness: 1.0,
-                        indent: 20,
-                        endIndent: 20,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 50, top: 10),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Sender name: Aumza55+',
-                            style: TextStyle(fontSize: 16),
-                          )
-                        ],
-                      ),
+                    Column(
+                      children: [
+                        Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10.0),
+                              child: Divider(
+                                color: Colors.black,
+                                thickness: 1.0,
+                                indent: 20,
+                                endIndent: 20,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 50, top: 10),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Status Order:',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                  Text(
+                                    ' กำลังส่งสินค้า',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color: const Color.fromARGB(
+                                            255, 238, 74, 25),
+                                        fontWeight: FontWeight.bold),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 50, top: 5),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Receiver name: ลุงสมยศ พจมารทรายทอง',
+                                    style: TextStyle(fontSize: 16),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10.0),
+                              child: Divider(
+                                color: Colors.black,
+                                thickness: 1.0,
+                                indent: 20,
+                                endIndent: 20,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 50, top: 10),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Sender name: Aumza55+',
+                                    style: TextStyle(fontSize: 16),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 )
@@ -219,6 +270,7 @@ class _DetailPageState extends State<DetailPage> {
             ),
           ),
         ),
+
         collapsed: Container(
           decoration: BoxDecoration(
               color: Colors.deepOrangeAccent, borderRadius: radius),
@@ -401,5 +453,111 @@ class _DetailPageState extends State<DetailPage> {
     latLng = LatLng(postion.latitude, postion.longitude);
     mapController.move(latLng, mapController.camera.zoom);
     setState(() {});
+  }
+
+  Future<void> GetApiEndpoint() async {
+    Configguration.getConfig().then(
+      (value) {
+        log('MainUserGet API ');
+        // log(value['apiEndpoint']);
+        setState(() {
+          url = value['apiEndpoint'];
+        });
+      },
+    ).catchError((err) {
+      log(err.toString());
+    });
+  }
+
+  Future<void> getUserDataFromStorage() async {
+    final storage = GetStorage();
+
+    final riderId = storage.read('RiderID');
+    final senderId = storage.read('SenderID');
+    // final userEmail = storage.read('Email');
+    // final userImage = storage.read('Image');
+
+    // log(userUsername);
+
+    setState(() {
+      this.riderId = riderId;
+      this.senderId = senderId;
+      // this.userEmail = userEmail;
+      // this.userImage = userImage;
+      // log(userId);
+    });
+  }
+
+  void getRiderMet() async {
+    try {
+      final response = await http.post(
+        Uri.parse("$url/profile/rider"),
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+        body: jsonEncode({"RiderID": riderId}),
+      );
+      if (response.statusCode == 200) {
+        // เมื่อดึงข้อมูลสำเร็จให้ใช้ setState
+        setState(() {
+          RiderGetResponses = riderGetResponseFromJson(
+              response.body); // แปลง JSON และอัปเดตตัวแปร riders
+        });
+      } else {
+        // จัดการกรณีเกิดข้อผิดพลาด
+        // setState(() {
+        // });
+        throw Exception('Failed to load riders');
+      }
+      log(response.body);
+    } catch (e) {
+      print('Error during login: $e');
+    }
+  }
+
+  Future<void> fetchUsers() async {
+    // แสดง dialog โหลดข้อมูล
+
+    try {
+      final res = await http.get(
+        Uri.parse("$url/profile/user/$senderId"),
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+      );
+
+      if (res.statusCode == 200) {
+        // ตรวจสอบว่า API ส่งกลับสถานะ 200 หรือไม่
+        setState(() {
+          GetResponsesUser = getResponseUserFromJson(res.body);
+        });
+      } else {
+        log("Failed to load users: ${res.statusCode}");
+      }
+
+      final data = json.decode(res.body);
+      // log(res.body);
+    } catch (e) {
+      log("Error: $e");
+    } finally {
+      // ปิด Dialog หลังจากโหลดข้อมูลเสร็จ
+    }
+  }
+
+  void _showLoadingDialog() {
+    // โลหด
+    showDialog(
+      context: context,
+      barrierDismissible: false, // ป้องกันการปิด dialog โดยคลิกที่ด้านนอก
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent, // พื้นหลังโปร่งใส
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(), // แสดงวงกลมหมุน
+              SizedBox(height: 15),
+              Text("Loading...", style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

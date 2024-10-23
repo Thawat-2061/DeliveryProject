@@ -410,146 +410,137 @@ class _RegisterPageState extends State<RegisterPage> {
                                             SizedBox(
                                               height: 10,
                                             ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 16.0),
-                                              child: SizedBox(
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    0.8, // ปรับขนาดตามหน้าจอ
-                                                child: Column(
-                                                  children: [
-                                                    SizedBox(
-                                                      height: 50,
-                                                      child: TextField(
-                                                        controller: positionCtl,
-                                                        readOnly:
-                                                            true, // Read-only เพื่อให้ผู้ใช้คลิกเลือกตำแหน่งจากแผนที่เท่านั้น
-                                                        decoration:
-                                                            InputDecoration(
-                                                          labelText:
-                                                              "Selected Position",
-                                                          labelStyle:
-                                                              const TextStyle(
-                                                                  color: Colors
-                                                                      .white),
-                                                          prefixIcon:
-                                                              const Icon(
-                                                                  Icons.map,
-                                                                  color: Colors
-                                                                      .white),
-                                                          enabledBorder:
-                                                              OutlineInputBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        30.0),
-                                                            borderSide:
-                                                                const BorderSide(
-                                                                    color: Colors
-                                                                        .white),
-                                                          ),
-                                                          focusedBorder:
-                                                              OutlineInputBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        30.0),
-                                                            borderSide:
-                                                                const BorderSide(
-                                                                    color: Colors
-                                                                        .white),
-                                                          ),
-                                                        ),
-                                                        style: const TextStyle(
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.9, // ปรับขนาดตามหน้าจอ
+                                              child: Column(
+                                                children: [
+                                                  SizedBox(
+                                                    height: 50,
+                                                    child: TextField(
+                                                      controller: positionCtl,
+                                                      readOnly:
+                                                          true, // Read-only เพื่อให้ผู้ใช้คลิกเลือกตำแหน่งจากแผนที่เท่านั้น
+                                                      decoration:
+                                                          InputDecoration(
+                                                        labelText:
+                                                            "Selected Position",
+                                                        labelStyle:
+                                                            const TextStyle(
+                                                                color: Colors
+                                                                    .white),
+                                                        prefixIcon: const Icon(
+                                                            Icons.map,
                                                             color:
                                                                 Colors.white),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 10),
-//---------------------------------------------------------- M A P -------------------------------------
-                                                    GestureDetector(
-                                                      onTap: () {
-                                                        setState(() {
-                                                          _showMap =
-                                                              !_showMap; // สลับการแสดง/ซ่อนแผนที่
-                                                        });
-                                                      },
-                                                      child: Text(
-                                                        _showMap
-                                                            ? 'แสดงน้อยลง'
-                                                            : 'เลือกที่อยู่ของคุณ',
-                                                        style: TextStyle(
-                                                          color: Colors
-                                                              .white, // สีของข้อความ
-                                                          decoration: TextDecoration
-                                                              .underline, // ใส่เส้นใต้ข้อความ
-                                                          decorationThickness:
-                                                              2.0, // ความหนาของเส้นใต้ (ปรับเปลี่ยนได้)
+                                                        enabledBorder:
+                                                            OutlineInputBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      30.0),
+                                                          borderSide:
+                                                              const BorderSide(
+                                                                  color: Colors
+                                                                      .white),
+                                                        ),
+                                                        focusedBorder:
+                                                            OutlineInputBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      30.0),
+                                                          borderSide:
+                                                              const BorderSide(
+                                                                  color: Colors
+                                                                      .white),
                                                         ),
                                                       ),
+                                                      style: const TextStyle(
+                                                          color: Colors.white),
                                                     ),
-                                                    const SizedBox(height: 10),
-                                                    // การแสดงแผนที่ (แสดงเมื่อ _showMap == true)
-                                                    Visibility(
-                                                      visible: _showMap,
-                                                      child: SizedBox(
-                                                        height:
-                                                            300, // ขนาดความสูงของแผนที่
-                                                        child: FlutterMap(
-                                                          mapController:
-                                                              mapController,
-                                                          options: MapOptions(
-                                                            initialCenter:
-                                                                latLng,
-                                                            initialZoom: 15.0,
-                                                            onTap: (tapPosition,
-                                                                point) {
-                                                              setState(() {
-                                                                latLng =
-                                                                    point; // อัปเดตตำแหน่งที่เลือก
-                                                                positionCtl
-                                                                        .text =
-                                                                    'Lat: ${point.latitude}, Lng: ${point.longitude}'; // แสดงค่าตำแหน่งใน TextField
-                                                                mapController.move(
-                                                                    latLng,
-                                                                    mapController
-                                                                        .camera
-                                                                        .zoom);
-                                                              });
-                                                            },
+                                                  ),
+                                                  const SizedBox(height: 10),
+                                                  //---------------------------------------------------------- M A P -------------------------------------
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      setState(() {
+                                                        _showMap =
+                                                            !_showMap; // สลับการแสดง/ซ่อนแผนที่
+                                                      });
+                                                    },
+                                                    child: Text(
+                                                      _showMap
+                                                          ? 'แสดงน้อยลง'
+                                                          : 'เลือกที่อยู่ของคุณ',
+                                                      style: TextStyle(
+                                                        color: Colors
+                                                            .white, // สีของข้อความ
+                                                        decoration: TextDecoration
+                                                            .underline, // ใส่เส้นใต้ข้อความ
+                                                        decorationThickness:
+                                                            2.0, // ความหนาของเส้นใต้ (ปรับเปลี่ยนได้)
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 10),
+                                                  // การแสดงแผนที่ (แสดงเมื่อ _showMap == true)
+                                                  Visibility(
+                                                    visible: _showMap,
+                                                    child: SizedBox(
+                                                      height:
+                                                          300, // ขนาดความสูงของแผนที่
+                                                      child: FlutterMap(
+                                                        mapController:
+                                                            mapController,
+                                                        options: MapOptions(
+                                                          initialCenter: latLng,
+                                                          initialZoom: 15.0,
+                                                          onTap: (tapPosition,
+                                                              point) {
+                                                            setState(() {
+                                                              latLng =
+                                                                  point; // อัปเดตตำแหน่งที่เลือก
+                                                              positionCtl.text =
+                                                                  'Lat: ${point.latitude}, Lng: ${point.longitude}'; // แสดงค่าตำแหน่งใน TextField
+                                                              mapController.move(
+                                                                  latLng,
+                                                                  mapController
+                                                                      .camera
+                                                                      .zoom);
+                                                            });
+                                                          },
+                                                        ),
+                                                        children: [
+                                                          TileLayer(
+                                                            urlTemplate:
+                                                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                                            userAgentPackageName:
+                                                                'com.example.app',
+                                                            maxNativeZoom: 19,
                                                           ),
-                                                          children: [
-                                                            TileLayer(
-                                                              urlTemplate:
-                                                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                                              userAgentPackageName:
-                                                                  'com.example.app',
-                                                              maxNativeZoom: 19,
-                                                            ),
-                                                            MarkerLayer(
-                                                              markers: [
-                                                                Marker(
-                                                                  point: latLng,
-                                                                  width: 40,
-                                                                  height: 40,
-                                                                  child: const Icon(
-                                                                      Icons
-                                                                          .location_pin,
-                                                                      color: Colors
-                                                                          .red),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
+                                                          MarkerLayer(
+                                                            markers: [
+                                                              Marker(
+                                                                point: latLng,
+                                                                width: 40,
+                                                                height: 40,
+                                                                child: const Icon(
+                                                                    Icons
+                                                                        .location_pin,
+                                                                    color: Colors
+                                                                        .red),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
-//---------------------------------------------------------- M A P -------------------------------------
-                                                  ],
-                                                ),
+                                                  ),
+                                                  //---------------------------------------------------------- M A P -------------------------------------
+                                                ],
                                               ),
                                             ),
                                           ],

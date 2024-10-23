@@ -4,40 +4,52 @@
 
 import 'dart:convert';
 
-List<SenderGetResponse> senderGetResponseFromJson(String str) => List<SenderGetResponse>.from(json.decode(str).map((x) => SenderGetResponse.fromJson(x)));
+List<SenderGetResponse> senderGetResponseFromJson(String str) =>
+    List<SenderGetResponse>.from(
+        json.decode(str).map((x) => SenderGetResponse.fromJson(x)));
 
-String senderGetResponseToJson(List<SenderGetResponse> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+String senderGetResponseToJson(List<SenderGetResponse> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class SenderGetResponse {
-    int orderId;
-    int senderId;
-    int receiverId;
-    dynamic riderId;
-    String name;
-    String detail;
-    String status;
-    String image;
-    String customerName;
-    String phone;
-    double customerLat;
-    double customerLong;
+  int orderId;
+  int senderId;
+  int receiverId;
+  int? riderId;
+  String name;
+  String detail;
+  String status;
+  String image;
+  String customerName;
+  String customerPhone;
+  double customerLat;
+  double customerLong;
+  String senderName;
+  String senderPhone;
+  int senderLat;
+  int senderLong;
 
-    SenderGetResponse({
-        required this.orderId,
-        required this.senderId,
-        required this.receiverId,
-        required this.riderId,
-        required this.name,
-        required this.detail,
-        required this.status,
-        required this.image,
-        required this.customerName,
-        required this.phone,
-        required this.customerLat,
-        required this.customerLong,
-    });
+  SenderGetResponse({
+    required this.orderId,
+    required this.senderId,
+    required this.receiverId,
+    required this.riderId,
+    required this.name,
+    required this.detail,
+    required this.status,
+    required this.image,
+    required this.customerName,
+    required this.customerPhone,
+    required this.customerLat,
+    required this.customerLong,
+    required this.senderName,
+    required this.senderPhone,
+    required this.senderLat,
+    required this.senderLong,
+  });
 
-    factory SenderGetResponse.fromJson(Map<String, dynamic> json) => SenderGetResponse(
+  factory SenderGetResponse.fromJson(Map<String, dynamic> json) =>
+      SenderGetResponse(
         orderId: json["OrderID"],
         senderId: json["SenderID"],
         receiverId: json["ReceiverID"],
@@ -47,12 +59,16 @@ class SenderGetResponse {
         status: json["Status"],
         image: json["Image"],
         customerName: json["CustomerName"],
-        phone: json["Phone"],
+        customerPhone: json["CustomerPhone"],
         customerLat: json["CustomerLat"]?.toDouble(),
         customerLong: json["CustomerLong"]?.toDouble(),
-    );
+        senderName: json["SenderName"],
+        senderPhone: json["SenderPhone"],
+        senderLat: json["SenderLat"],
+        senderLong: json["SenderLong"],
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "OrderID": orderId,
         "SenderID": senderId,
         "ReceiverID": receiverId,
@@ -62,8 +78,12 @@ class SenderGetResponse {
         "Status": status,
         "Image": image,
         "CustomerName": customerName,
-        "Phone": phone,
+        "CustomerPhone": customerPhone,
         "CustomerLat": customerLat,
         "CustomerLong": customerLong,
-    };
+        "SenderName": senderName,
+        "SenderPhone": senderPhone,
+        "SenderLat": senderLat,
+        "SenderLong": senderLong,
+      };
 }

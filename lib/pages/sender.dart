@@ -51,6 +51,7 @@ class _SenderPageState extends State<SenderPage> {
 
   String url = '';
   var senderId;
+  var riderId;
 
   @override
   void initState() {
@@ -305,7 +306,15 @@ class _SenderPageState extends State<SenderPage> {
                                   child: InkWell(
                                     onTap: () {
                                       // นำทางไปยังหน้า DetailPage พร้อมส่งค่า productId
-                                      Get.to(() => DetailPage());
+                                      if (data.status != 'รอไรเดอร์') {
+                                        setState(() {
+                                          this.riderId =
+                                              data.riderId.toString();
+                                        });
+                                        seeDetail();
+                                      } else {
+                                        log('กำลังรอไรเดอร์มารับออเดอร์ของคุณอยู่');
+                                      }
                                     },
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
@@ -326,7 +335,7 @@ class _SenderPageState extends State<SenderPage> {
                                 ),
                               ),
                               DataCell(Center(child: Text(data.customerName))),
-                              DataCell(Text(data.phone)),
+                              DataCell(Text(data.customerPhone)),
                               DataCell(
                                 Center(
                                   child: InkWell(
@@ -561,5 +570,23 @@ class _SenderPageState extends State<SenderPage> {
         );
       },
     );
+  }
+
+  void seeDetail() async {
+    final storage = GetStorage();
+    await storage.write('RiderID', riderId.toString());
+    await storage.write('SenderID', senderId.toString());
+
+    // try {
+    //   final response = await http.post(
+    //     Uri.parse("$url/login/rider"),
+    //     headers: {"Content-Type": "application/json; charset=utf-8"},
+    //     body: jsonEncode({"RiderID": }),
+    //   );
+    //   } catch (e) {
+    //   print('Error during login: $e');
+    // }
+
+    Get.to(() => DetailPage());
   }
 }
