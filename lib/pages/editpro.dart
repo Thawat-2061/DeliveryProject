@@ -372,13 +372,44 @@ class _EditproPageState extends State<EditproPage> {
                     height: 50,
                     child: GestureDetector(
                       onTap: () {
-                        editPro();
-                        log('Username: $username');
-                        log('Email: $email');
-                        log('Phone: $phone');
-                        log('Address: $address');
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('ยืนยันการแก้ไข'),
+                              content: Text(
+                                  'คุณแน่ใจหรือไม่ว่าต้องการแก้ไขข้อมูลนี้?'),
+                              actions: [
+                                TextButton(
+                                  child: Text('ยกเลิก'),
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .pop(); // ปิดกล่องโต้ตอบเมื่อผู้ใช้ยกเลิก
+                                  },
+                                ),
+                                TextButton(
+                                  child: Text('ยืนยัน'),
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .pop(); // ปิดกล่องโต้ตอบเมื่อผู้ใช้ยืนยัน
 
-                        // Get.to(() => const SenderPage());
+                                    // เรียกฟังก์ชันแก้ไขข้อมูล
+                                    editPro();
+
+                                    // แสดงข้อมูลที่ต้องการ log
+                                    log('Username: $username');
+                                    log('Email: $email');
+                                    log('Phone: $phone');
+                                    log('Address: $address');
+
+                                    // หากต้องการไปหน้าอื่นหลังจากยืนยัน
+                                    // Get.to(() => const SenderPage());
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -550,6 +581,7 @@ class _EditproPageState extends State<EditproPage> {
             log("Upload Firebase");
             final storage = GetStorage();
             await storage.write('Image', data['url'].toString() ?? '');
+            Get.offAll(const ProfilePage());
           }
         } else {
           print('Error: URL not found in response');
@@ -604,6 +636,27 @@ class _EditproPageState extends State<EditproPage> {
 
   void editPro() async {
     await _uploadFile();
+    final resp = await http.put(
+      Uri.parse("$url/profile/update"),
+      headers: {"Content-Type": "application/json; charset=utf-8"},
+      body: jsonEncode({
+        "UserID": userId,
+        "Username": usernameController,
+        "Phone": phoneController,
+        "Email": emailController,
+        "Address": addressController
+      }),
+    );
+    if (resp.statusCode == 200) {
+      log("Upload Firebase");
+      final storage = GetStorage();
+      // await storage.write('Image', data['url'].toString() ?? '');
+      //     await storage.write('Username', ?.toString() ?? '');
+      // await storage.write('Email', user['Email']?.toString() ?? '');
+      // await storage.write('UserPhone', user['Phone']?.toString() ?? '');
+      // await storage.write('Address', user['Address']?.toString() ?? '');
+      Get.offAll(const ProfilePage());
+    }
   }
 
   @override

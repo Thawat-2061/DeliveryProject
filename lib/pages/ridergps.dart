@@ -12,6 +12,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:rider/config/config.dart';
 import 'package:rider/model/response/GetResponseUser.dart';
 import 'package:rider/model/response/SenderGetResponse.dart';
+import 'package:rider/pages/rider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -947,6 +948,9 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
             log("Upload Firebase");
             final storage = GetStorage();
             await storage.write('Image', data['url'].toString() ?? '');
+            if (status == 'ส่งสำเร็จ') {
+              Get.offAll(const RiderPage());
+            }
           }
         } else {
           print('Error: URL not found in response');
@@ -1029,11 +1033,11 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
       case 'รอไรเดอร์':
         return 'ไรเดอร์รับงานแล้ว';
       case '':
-        return 'ไรเดอร์รับสินค้าแล้ว';
+        return 'ไรเดอร์รับสินค้าแล้วกำลังส่งสินค้า';
       case 'กำลังเดินทาง':
-        return 'ไรเดอร์กำลังส่งสินค้า';
-      case 'ส่งสำเร็จ':
         return 'สินค้าส่งสำเร็จแล้ว';
+      case 'ส่งสำเร็จ':
+        return '';
       default:
         return 'สถานะไม่ทราบ';
     }

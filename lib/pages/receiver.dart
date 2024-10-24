@@ -511,7 +511,6 @@ class _ReceiverPageState extends State<ReceiverPage> {
               LatLng(user.senderLat, user.senderLong); // ใช้ข้อมูล GPS จาก API
           re = LatLng(
               user.senderLat, user.senderLong); // จุดปลายทาง (ตัวอย่างพิกัด)
-
         });
         log('aaaaaaaa: $senderId');
       } else {
@@ -522,7 +521,7 @@ class _ReceiverPageState extends State<ReceiverPage> {
 
       // log(res.body);
     } catch (e) {
-      log("Error: $e");
+      log("Erroree: $e");
     }
     Navigator.of(context).pop();
   }
@@ -619,7 +618,7 @@ class _ReceiverPageState extends State<ReceiverPage> {
       barrierDismissible: true, // สามารถกดด้านนอกเพื่อปิดได้
       builder: (BuildContext context) {
         return Dialog(
-            backgroundColor: Colors.transparent, // ตั้งค่าพื้นหลังเป็นโปร่งใส
+          backgroundColor: Colors.transparent, // ตั้งค่าพื้นหลังเป็นโปร่งใส
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0),
           ),

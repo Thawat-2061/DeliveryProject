@@ -15,7 +15,7 @@ class ReceiverGetResponse {
   int orderId;
   int senderId;
   int receiverId;
-  int riderId;
+  dynamic riderId;
   String name;
   String detail;
   String status;

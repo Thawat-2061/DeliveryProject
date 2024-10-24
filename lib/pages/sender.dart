@@ -539,7 +539,6 @@ class _SenderPageState extends State<SenderPage> {
               user.customerLat, user.customerLong); // ใช้ข้อมูล GPS จาก API
           re = LatLng(
               user.senderLat, user.senderLong); // จุดปลายทาง (ตัวอย่างพิกัด)
-
         });
         log('aaaaaaaa: $senderId');
       } else {
@@ -648,7 +647,7 @@ class _SenderPageState extends State<SenderPage> {
       barrierDismissible: true, // สามารถกดด้านนอกเพื่อปิดได้
       builder: (BuildContext context) {
         return Dialog(
-            backgroundColor: Colors.transparent, // ตั้งค่าพื้นหลังเป็นโปร่งใส
+          backgroundColor: Colors.transparent, // ตั้งค่าพื้นหลังเป็นโปร่งใส
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0),
           ),
