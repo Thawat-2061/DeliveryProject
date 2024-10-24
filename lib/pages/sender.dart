@@ -293,151 +293,171 @@ class _SenderPageState extends State<SenderPage> {
                             ),
                           ),
                         ],
-                        rows: SenderGetResponses.asMap().entries.map((entry) {
-                          var data = entry.value; // ดึงข้อมูลจาก API/database
-                          return DataRow(
-                            cells: <DataCell>[
-                              DataCell(
-                                Center(
-                                  child: InkWell(
-                                    onTap: () {
-                                      // แสดงข้อมูลสินค้าใน Dialog
-                                      showDialog(
-                                        context: context,
-                                        barrierDismissible: true,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title: Text(
-                                              'ชื่อสินค้า ${data.name}',
-                                              style: TextStyle(
-                                                  color: Colors.white),
+                        rows: SenderGetResponses.isEmpty
+                            ? [
+                                DataRow(cells: [
+                                  DataCell(SizedBox(width: 80, child: Text(''))),
+                                  DataCell(SizedBox(width: 40, child: Text(''))),
+                                  DataCell(SizedBox(width: 120, child: Center(child: Text('No products.')))),
+                                  DataCell(SizedBox(width: 40, child: Text(''))),
+                                  DataCell(SizedBox(width: 80, child: Text(''))),
+                                ])
+                              ]
+                            : SenderGetResponses.asMap().entries.map((entry) {
+                                var data =
+                                    entry.value; // ดึงข้อมูลจาก API/database
+                                return DataRow(
+                                  cells: <DataCell>[
+                                    DataCell(
+                                      Center(
+                                        child: InkWell(
+                                          onTap: () {
+                                            // แสดงข้อมูลสินค้าใน Dialog
+                                            showDialog(
+                                              context: context,
+                                              barrierDismissible: true,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: Text(
+                                                    'ชื่อสินค้า ${data.name}',
+                                                    style: TextStyle(
+                                                        color: Colors.white),
+                                                  ),
+                                                  content: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      // Text('ชื่อ: ${data.name}'),
+                                                      Text(
+                                                          'รายละเอียด: ${data.detail}'),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
+                                          child: SizedBox(
+                                            width: 50,
+                                            child: Text(
+                                              data.name,
+                                              overflow: TextOverflow.ellipsis,
+                                              softWrap: false,
                                             ),
-                                            content: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                // Text('ชื่อ: ${data.name}'),
-                                                Text(
-                                                    'รายละเอียด: ${data.detail}'),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                    child: SizedBox(
-                                      width: 50,
-                                      child: Text(
-                                        data.name,
-                                        overflow: TextOverflow.ellipsis,
-                                        softWrap: false,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Center(
-                                  child: InkWell(
-                                    onTap: () {
-                                      // นำทางไปยังหน้า DetailPage พร้อมส่งค่า productId
-                                      if (data.status != 'รอไรเดอร์') {
-                                        setState(() {
-                                          this.riderId =
-                                              data.riderId.toString();
-                                          this.orderId =
-                                              data.orderId.toString();
-                                          this.senderImage =
-                                              data.senderImage.toString();
-                                          this.receiverImage =
-                                              data.customerImage.toString();
-                                          // log('$receiverImage');
-                                        });
-                                        seeDetail();
-                                      } else {
-                                        log('กำลังรอไรเดอร์มารับออเดอร์ของคุณอยู่');
-                                      }
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: _getStatusColor(data
-                                            .status), // ฟังก์ชันกำหนดสีพื้นหลังตามสถานะ
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        data.status,
-                                        style: const TextStyle(
-                                          color: Colors.black, // สีข้อความ
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              ),
-                              DataCell(Center(child: Text(data.customerName))),
-                              DataCell(Text(data.customerPhone)),
-                              DataCell(
-                                Center(
-                                  child: InkWell(
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        barrierDismissible: true,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            backgroundColor: Colors.transparent,
-                                            content: SizedBox(
-                                              width: 300, // กำหนดขนาดของ dialog
-                                              height: 300,
-                                              child: Stack(
-                                                alignment: Alignment.center,
-                                                children: [
-                                                  // CircularProgressIndicator สำหรับแสดงการโหลดหมุนๆ
-                                                  const Center(
-                                                    child:
-                                                        CircularProgressIndicator(),
-                                                  ),
-                                                  // ภาพที่โหลดจาก network
-                                                  Image.network(
-                                                    data.image,
-                                                    fit: BoxFit.cover,
-                                                    loadingBuilder: (BuildContext
-                                                            context,
-                                                        Widget child,
-                                                        ImageChunkEvent?
-                                                            loadingProgress) {
-                                                      if (loadingProgress ==
-                                                          null) {
-                                                        return child; // หากโหลดเสร็จแล้ว ให้แสดงภาพ
-                                                      } else {
-                                                        return const Center(
-                                                          child:
-                                                              CircularProgressIndicator(), // แสดงการโหลดหมุนๆ จนกว่าจะโหลดเสร็จ
-                                                        );
-                                                      }
-                                                    },
-                                                  ),
-                                                ],
+                                    DataCell(
+                                      Center(
+                                        child: InkWell(
+                                          onTap: () {
+                                            // นำทางไปยังหน้า DetailPage พร้อมส่งค่า productId
+                                            if (data.status != 'รอไรเดอร์') {
+                                              setState(() {
+                                                this.riderId =
+                                                    data.riderId.toString();
+                                                this.orderId =
+                                                    data.orderId.toString();
+                                                this.senderImage =
+                                                    data.senderImage.toString();
+                                                this.receiverImage = data
+                                                    .customerImage
+                                                    .toString();
+                                                // log('$receiverImage');
+                                              });
+                                              seeDetail();
+                                            } else {
+                                              log('กำลังรอไรเดอร์มารับออเดอร์ของคุณอยู่');
+                                            }
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 8),
+                                            decoration: BoxDecoration(
+                                              color: _getStatusColor(data
+                                                  .status), // ฟังก์ชันกำหนดสีพื้นหลังตามสถานะ
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              data.status,
+                                              style: const TextStyle(
+                                                color:
+                                                    Colors.black, // สีข้อความ
                                               ),
                                             ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.image,
-                                        color: Colors.grey,
-                                        size: 40,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList(),
+                                    DataCell(
+                                        Center(child: Text(data.customerName))),
+                                    DataCell(Text(data.customerPhone)),
+                                    DataCell(
+                                      Center(
+                                        child: InkWell(
+                                          onTap: () {
+                                            showDialog(
+                                              context: context,
+                                              barrierDismissible: true,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  backgroundColor:
+                                                      Colors.transparent,
+                                                  content: SizedBox(
+                                                    width:
+                                                        300, // กำหนดขนาดของ dialog
+                                                    height: 300,
+                                                    child: Stack(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      children: [
+                                                        // CircularProgressIndicator สำหรับแสดงการโหลดหมุนๆ
+                                                        const Center(
+                                                          child:
+                                                              CircularProgressIndicator(),
+                                                        ),
+                                                        // ภาพที่โหลดจาก network
+                                                        Image.network(
+                                                          data.image,
+                                                          fit: BoxFit.cover,
+                                                          loadingBuilder:
+                                                              (BuildContext
+                                                                      context,
+                                                                  Widget child,
+                                                                  ImageChunkEvent?
+                                                                      loadingProgress) {
+                                                            if (loadingProgress ==
+                                                                null) {
+                                                              return child; // หากโหลดเสร็จแล้ว ให้แสดงภาพ
+                                                            } else {
+                                                              return const Center(
+                                                                child:
+                                                                    CircularProgressIndicator(), // แสดงการโหลดหมุนๆ จนกว่าจะโหลดเสร็จ
+                                                              );
+                                                            }
+                                                          },
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
+                                          child: const Center(
+                                            child: Icon(
+                                              Icons.image,
+                                              color: Colors.grey,
+                                              size: 40,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
                       ),
                     ],
                   ),

@@ -158,7 +158,17 @@ class _RiderPageState extends State<RiderPage> {
                               ),
                             ),
                           ],
-                          rows: RiderGetResponses.asMap().entries.map((entry) {
+                          rows:  RiderGetResponses.isEmpty
+                            ? [
+                                DataRow(cells: [
+                                  DataCell(SizedBox(width: 80, child: Text(''))),
+                                  DataCell(SizedBox(width: 40, child: Text(''))),
+                                  DataCell(SizedBox(width: 120, child: Center(child: Text('No works.')))),
+                                  DataCell(SizedBox(width: 40, child: Text(''))),
+                                  DataCell(SizedBox(width: 80, child: Text(''))),
+                                ])
+                              ]
+                            : RiderGetResponses.asMap().entries.map((entry) {
                             var data = entry.value; // ดึงข้อมูลจาก API/database
                             return DataRow(
                               cells: <DataCell>[

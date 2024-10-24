@@ -23,24 +23,20 @@ class RiEditPage extends StatefulWidget {
 
 class _RiEditPageState extends State<RiEditPage> {
   //-----------------------------------------------------------
-  int _selectedIndex = 2;
+  int _selectedIndex = 1;
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
 
-    switch (index) {
+     switch (index) {
       case 0:
-        Get.to(() => const SenderPage());
 
         break;
       case 1:
-        Get.to(() => const ReceiverPage());
-        break;
-      case 2:
-        Get.to(() => const ProfilePage());
-        break;
+        Get.to(() => const RiProPage());
 
+        break;
       // เพิ่มกรณีอื่นๆ สำหรับการนำทางไปยังหน้าอื่นๆ ที่นี่
     }
   }
@@ -324,22 +320,64 @@ class _RiEditPageState extends State<RiEditPage> {
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
-                              title: Text('ยืนยันการแก้ไข'),
+                              backgroundColor:
+                                  Colors.blueGrey[900], // พื้นหลังของ AlertDialog
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20.0)),
+                              ),
+                              title: Text(
+                                'ยืนยันการแก้ไข',
+                                style: TextStyle(
+                                  color: Colors.white, // สีตัวอักษรหัวข้อ
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 22,
+                                ),
+                              ),
                               content: Text(
-                                  'คุณแน่ใจหรือไม่ว่าต้องการแก้ไขข้อมูลนี้?'),
+                                'คุณแน่ใจหรือไม่ว่าต้องการแก้ไขข้อมูลนี้?',
+                                style: TextStyle(
+                                  color: Colors.white70, // สีตัวอักษรเนื้อหา
+                                  fontSize: 18,
+                                ),
+                              ),
                               actions: [
                                 TextButton(
-                                  child: Text('ยกเลิก'),
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors
+                                        .redAccent, // สีพื้นหลังปุ่มยกเลิก
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 15, vertical: 10),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
                                   onPressed: () {
                                     Navigator.of(context)
-                                        .pop(); // ปิดกล่องโต้ตอบเมื่อผู้ใช้ยกเลิก
+                                        .pop(); // ปิดกล่องโต้ตอบเมื่อกด ยกเลิก
                                   },
+                                  child: Text(
+                                    'ยกเลิก',
+                                    style: TextStyle(
+                                      color:
+                                          Colors.white, // สีตัวอักษรปุ่มยกเลิก
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                 ),
                                 TextButton(
-                                  child: Text('ยืนยัน'),
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.greenAccent[
+                                        400], // สีพื้นหลังปุ่มยืนยัน
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 15, vertical: 10),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
                                   onPressed: () {
                                     Navigator.of(context)
-                                        .pop(); // ปิดกล่องโต้ตอบเมื่อผู้ใช้ยืนยัน
+                                        .pop(); // ปิดกล่องโต้ตอบเมื่อกดยืนยัน
                                     String updatedRidername =
                                         ridername ?? ridernameController.text;
                                     String updatedPhone =
@@ -350,15 +388,18 @@ class _RiEditPageState extends State<RiEditPage> {
                                     // เรียกฟังก์ชันแก้ไขข้อมูล
                                     editPro(updatedRidername, updatedPhone,
                                         updatedEmail);
-                                    // แสดงข้อมูลที่ต้องการ log
-                                    // log('Ridername: $ridername');
-                                    // log('Email: $email');
-                                    // log('Phone: $phone');
-                                    // log('Address: $address');
 
                                     // หากต้องการไปหน้าอื่นหลังจากยืนยัน
                                     // Get.to(() => const RiProPage());
                                   },
+                                  child: Text(
+                                    'ยืนยัน',
+                                    style: TextStyle(
+                                      color:
+                                          Colors.white, // สีตัวอักษรปุ่มยืนยัน
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                 ),
                               ],
                             );
@@ -408,9 +449,9 @@ class _RiEditPageState extends State<RiEditPage> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor:
-            const Color(0xFF171716), // สีพื้นหลังของ BottomNavigationBar
+  bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color.fromARGB(
+            95, 46, 45, 45), // สีพื้นหลังของ BottomNavigationBar
         selectedItemColor:
             const Color.fromARGB(255, 240, 65, 42), // สีของไอคอนที่ถูกเลือก
         unselectedItemColor: Colors.grey, // สีของไอคอนที่ไม่ถูกเลือก
@@ -429,20 +470,20 @@ class _RiEditPageState extends State<RiEditPage> {
         ),
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.unarchive, size: 30), // ไอคอนของรายการ
-            label: 'Sender', // ข้อความของรายการ
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.archive, size: 30), // ไอคอนของรายการ
-            label: 'Receiver', // ข้อความของรายการ
+            icon: Image.asset(
+              'assets/images/cyc.png', // ระบุพาธของรูปภาพ
+              width: 100, // กำหนดความกว้างของรูปภาพ
+              height: 50, // กำหนดความสูงของรูปภาพ
+            ),
+            label: 'รับออเดอร์', // ข้อความของรายการ
           ),
           BottomNavigationBarItem(
             icon: Image.asset(
               'assets/images/profile.png', // ระบุพาธของรูปภาพ
-              width: 30, // กำหนดความกว้างของรูปภาพ
-              height: 30, // กำหนดความสูงของรูปภาพ
+              width: 50, // กำหนดความกว้างของรูปภาพ
+              height: 50, // กำหนดความสูงของรูปภาพ
             ),
-            label: 'Profile', // ข้อความของรายการ
+            label: 'ข้อมูลส่วนตัว', // ข้อความของรายการ
           ),
         ],
       ),
@@ -494,6 +535,7 @@ class _RiEditPageState extends State<RiEditPage> {
   }
 
   Future<void> _uploadFile() async {
+    _showLoadingDialog();
     if (image == null) {
       print('No file selected!');
       return;
@@ -548,6 +590,9 @@ class _RiEditPageState extends State<RiEditPage> {
       }
     } catch (e) {
       print('Error occurred while uploading file: $e');
+    }finally {
+      // ปิด Dialog หลังจากโหลดข้อมูลเสร็จ
+      Navigator.of(context).pop();
     }
   }
 
@@ -608,7 +653,7 @@ class _RiEditPageState extends State<RiEditPage> {
       await storage.write('Email', email.toString());
       await storage.write('RiderPhone', phone.toString());
       await getUserDataFromStorage();
-      // Get.offAll(const ProfilePage());
+      Get.offAll(const RiProPage());
     }
   }
 
@@ -617,5 +662,26 @@ class _RiEditPageState extends State<RiEditPage> {
     // ทำลาย controller เมื่อไม่ได้ใช้งานแล้ว
     ridernameController.dispose();
     super.dispose();
+  }
+
+    void _showLoadingDialog() {
+    // โลหด
+    showDialog(
+      context: context,
+      barrierDismissible: false, // ป้องกันการปิด dialog โดยคลิกที่ด้านนอก
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent, // พื้นหลังโปร่งใส
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(), // แสดงวงกลมหมุน
+              SizedBox(height: 15),
+              Text("Loading...", style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
