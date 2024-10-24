@@ -187,7 +187,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
                                 child: Row(
                                   children: [
                                     Text(
-                                      'Receiver name: ${user.username}',
+                                      'Sender name: ${user.username}',
                                       style: TextStyle(fontSize: 16),
                                     )
                                   ],
@@ -307,7 +307,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
                       child: FlutterMap(
                         mapController: mapController,
                         options: MapOptions(
-                          initialCenter: sen,
+                          initialCenter: re,
                           initialZoom: 15.0,
                         ),
                         children: [
@@ -320,7 +320,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
                           MarkerLayer(
                             markers: [
                               Marker(
-                                point: sen,
+                                point: re,
                                 width: 40,
                                 height: 40,
                                 child: Container(
@@ -340,7 +340,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
                                 ),
                               ),
                               Marker(
-                                point: re, // จุดปลายทาง
+                                point: sen, // จุดปลายทาง
                                 width: 40,
                                 height: 40,
                                 child: Container(
@@ -383,7 +383,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
                           PolylineLayer(
                             polylines: [
                               Polyline(
-                                points: [sen, ri], // ลิสต์ของจุดเส้นทาง
+                                points: [re, ri], // ลิสต์ของจุดเส้นทาง
                                 color: Colors.blue,
                                 strokeWidth: 4.0,
                               ),
@@ -407,7 +407,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
                 ElevatedButton(
                   onPressed: () {
                     // เพิ่มการทำงานที่ต้องการสำหรับปุ่ม 1
-                    Get.to(() => const RiderPage());
+                    Get.offAll(() => const RiderPage());
 
                     log('Button 1 tapped');
                   },
@@ -731,9 +731,9 @@ class _RiderviewPageState extends State<RiderviewPage> {
           SenderGetResponses = senderGetResponseFromJson(res.body);
           // อัพเดทพิกัดแผนที่จากข้อมูลใน API
           var user = SenderGetResponses.first; // สมมติว่าใช้ผู้ใช้งานคนแรก
-          sen = LatLng(
-              user.customerLat, user.customerLong); // ใช้ข้อมูล GPS จาก API
           re = LatLng(
+              user.customerLat, user.customerLong); // ใช้ข้อมูล GPS จาก API
+          sen = LatLng(
               user.senderLat, user.senderLong); // จุดปลายทาง (ตัวอย่างพิกัด)
 
           mapController.move(sen, mapController.camera.zoom);
@@ -805,7 +805,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
         // Check if the widget is still mounted before navigating
         // if (!context.mounted) return;
         Navigator.of(context).pop(); // ปิด dialog
-        Get.to(() => const RiderGPSPage()); // เปลี่ยนไปที่หน้าถัดไป
+        Get.offAll(() => const RiderGPSPage()); // เปลี่ยนไปที่หน้าถัดไป
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Status Changed successfully!')),

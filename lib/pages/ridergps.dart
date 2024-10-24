@@ -97,257 +97,257 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
             Expanded(
               child: SlidingUpPanel(
                 controller: _panelController,
-                maxHeight: 300, // ความสูงสูงสุดตอนดึงขึ้น
+                maxHeight: 250, // ความสูงสูงสุดตอนดึงขึ้น
                 panel: Container(
                   decoration: BoxDecoration(
                       color: Color(0xFF171716), borderRadius: radius),
                   child: Center(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 5.0),
-                            child: Container(
-                              width: 50,
-                              height: 7,
-                              decoration: BoxDecoration(
-                                color: const Color.fromARGB(144, 158, 158,
-                                    158), // สีพื้นหลังของ Container
-                                borderRadius:
-                                    BorderRadius.circular(10), // ทำให้ขอบโค้ง
-                              ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5.0),
+                          child: Container(
+                            width: 50,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(144, 158, 158,
+                                  158), // สีพื้นหลังของ Container
+                              borderRadius:
+                                  BorderRadius.circular(10), // ทำให้ขอบโค้ง
                             ),
                           ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Column(
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(left: 30, top: 20),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      'Address receiver:',
-                                      style: TextStyle(fontSize: 16),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Column(
+                          children: [
+                            Column(
+                              children: [
+                                // ตรวจสอบสถานะและใช้ข้อมูลที่เหมาะสม
+                                ...(status == 'กำลังเดินทาง'
+                                        ? GetResponsesUserReceiver.asMap()
+                                            .entries // ใช้ GetResponsesUserReceiver เมื่อสถานะเป็น 'กำลังเดินทาง'
+                                        : GetResponsesUserSender.asMap()
+                                            .entries // ใช้ GetResponsesUserSender ในกรณีอื่น ๆ
                                     )
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 30, top: 5, right: 30),
-                                child: Row(
-                                  children: [
-                                    Flexible(
-                                      // Use Flexible to wrap long text
-                                      child: Text(
-                                        '199/96 ขามเรียง มหาวิทยาลัย มหาสารคาม 44150', // Fixed typo 'มหาวิทยาลับ' to 'มหาวิทยาลัย'
-                                        style: TextStyle(fontSize: 16),
-                                        softWrap:
-                                            true, // Allows text to wrap to the next line
-                                        overflow: TextOverflow
-                                            .visible, // Ensures the text doesn't overflow
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 10.0),
-                                child: Divider(
-                                  color: Colors.grey,
-                                  thickness: 1.0,
-                                  indent: 20,
-                                  endIndent: 20,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 5),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment
-                                      .spaceEvenly, // จัดเรียงกลาง
-                                  children: [
-                                    Card(
-                                      color: Colors.white,
-                                      elevation: 4, // เพิ่มเงาให้กับการ์ด
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            10), // มุมโค้งของการ์ด
-                                      ),
-                                      child: InkWell(
-                                        onTap: () {
-                                          // เพิ่มฟังก์ชันเมื่อกดที่การ์ด
-                                          log('Contact Center tapped');
-                                        },
-                                        child: Container(
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 10,
-                                              horizontal: 20), // ระยะห่างภายใน
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.headset_mic,
-                                                  color: Colors.grey), // ไอคอน
-                                              SizedBox(
-                                                  width:
-                                                      8), // ระยะห่างระหว่างไอคอนและข้อความ
-                                              Text(
-                                                'ติดต่อศูนย์', // ข้อความ
-                                                style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 16),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Card(
-                                      color: Colors.white,
-                                      elevation: 4,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: InkWell(
-                                        onTap: () {
-                                          log('Chat tapped');
-                                        },
-                                        child: Container(
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 10, horizontal: 20),
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.chat,
-                                                  color: Colors.grey),
-                                              SizedBox(width: 8),
-                                              Text(
-                                                'แชท',
-                                                style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 16),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Card(
-                                      color: Colors.white,
-                                      elevation: 4,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: InkWell(
-                                        onTap: () {
-                                          log('Call tapped');
-                                        },
-                                        child: Container(
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 10, horizontal: 20),
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.phone,
-                                                  color: Colors.grey),
-                                              SizedBox(width: 8),
-                                              Text(
-                                                'โทร',
-                                                style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 16),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 5),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment
-                                      .spaceEvenly, // จัดเรียงกลาง
-                                  children: [
-                                    Card(
-                                      color: Colors.white,
-                                      elevation: 4, // เพิ่มเงาให้กับการ์ด
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            10), // มุมโค้งของการ์ด
-                                      ),
-                                      child: InkWell(
-                                        onTap:
-                                            _pickImage, // เรียกใช้งานฟังก์ชันนี้เมื่อผู้ใช้แตะที่ InkWell
-                                        child: Stack(
-                                          alignment: Alignment.bottomRight,
+                                    .map((entry) {
+                                  final data = entry.value; // ข้อมูล
+                    
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 30, top: 10),
+                                    child: Column(
+                                      children: [
+                                        Row(
                                           children: [
-                                            ClipOval(
-                                              child: InkWell(
-                                                onTap: () {
-                                                  if (image != null) {
-                                                    _showImageOptions(
-                                                        context); // ฟังก์ชันที่เรียกเมนูตัวเลือก
-                                                  } else {
-                                                    _pickImage(); // ถ้าไม่มีรูปให้เรียกฟังก์ชันเลือกภาพ
-                                                  }
-                                                },
-                                                child: image != null
-                                                    ? Image.file(
-                                                        image!,
-                                                        width: 180.0,
-                                                        height: 180.0,
-                                                        fit: BoxFit.cover,
-                                                      )
-                                                    : Container(
-                                                        width: 180.0,
-                                                        height: 180.0,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          shape:
-                                                              BoxShape.circle,
-                                                          color: Colors.grey[
-                                                              300], // พื้นหลังสีเทา
-                                                        ),
-                                                        child: Icon(
-                                                          Icons.camera_alt,
-                                                          color:
-                                                              Colors.grey[800],
-                                                          size: 50,
-                                                        ),
-                                                      ),
+                                            Text(
+                                              status == 'กำลังเดินทาง'
+                                                  ? 'Address receiver:' // แสดงข้อความสำหรับสถานะ 'กำลังเดินทาง'
+                                                  : 'Address sender:', // แสดงข้อความสำหรับสถานะอื่น ๆ
+                                              style: TextStyle(fontSize: 16),
+                                            ),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                data.address ??
+                                                    'ที่อยู่ไม่ทราบ', // แสดงที่อยู่จากข้อมูล
+                                                style:
+                                                    TextStyle(fontSize: 16),
+                                                softWrap: true,
+                                                overflow:
+                                                    TextOverflow.visible,
                                               ),
                                             ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Container(
-                                                width: 40,
-                                                height: 40,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: Colors
-                                                      .orangeAccent, // สีพื้นหลังปุ่มกล้อง
-                                                ),
-                                                child: Icon(
-                                                  Icons.camera_alt,
-                                                  size: 20,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(), // แปลงให้เป็น List<Widget>
+                              ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10.0),
+                              child: Divider(
+                                color: Colors.grey,
+                                thickness: 1.0,
+                                indent: 20,
+                                endIndent: 20,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment
+                                    .spaceEvenly, // จัดเรียงกลาง
+                                children: [
+                                  Card(
+                                    color: Colors.white,
+                                    elevation: 4, // เพิ่มเงาให้กับการ์ด
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          10), // มุมโค้งของการ์ด
+                                    ),
+                                    child: InkWell(
+                                      onTap: () {
+                                        // เพิ่มฟังก์ชันเมื่อกดที่การ์ด
+                                        log('Contact Center tapped');
+                                      },
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 10,
+                                            horizontal: 20), // ระยะห่างภายใน
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.headset_mic,
+                                                color: Colors.grey), // ไอคอน
+                                            SizedBox(
+                                                width:
+                                                    8), // ระยะห่างระหว่างไอคอนและข้อความ
+                                            Text(
+                                              'ติดต่อศูนย์', // ข้อความ
+                                              style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 16),
                                             ),
                                           ],
                                         ),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  Card(
+                                    color: Colors.white,
+                                    elevation: 4,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: InkWell(
+                                      onTap: () {
+                                        log('Chat tapped');
+                                      },
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 10, horizontal: 20),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.chat,
+                                                color: Colors.grey),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'แชท',
+                                              style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 16),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Card(
+                                    color: Colors.white,
+                                    elevation: 4,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: InkWell(
+                                      onTap: () {
+                                        log('Call tapped');
+                                      },
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 10, horizontal: 20),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.phone,
+                                                color: Colors.grey),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'โทร',
+                                              style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 16),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          )
-                        ],
-                      ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  SizedBox(
+                                      width:
+                                          MediaQuery.of(context).size.width *
+                                              0.2),
+                                  Card(
+                                    color: Colors.white,
+                                    elevation: 4,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: InkWell(
+                                      onTap: _pickImage,
+                                      child: Stack(
+                                        alignment: Alignment.bottomRight,
+                                        children: [
+                                          ClipOval(
+                                            child: InkWell(
+                                              onTap: () {
+                                                _pickImage();
+                                              },
+                                              child: Container(
+                                                width: 120.0,
+                                                height: 60.0,
+                                                decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color:
+                                                        Colors.orangeAccent),
+                                                child: Icon(
+                                                  Icons.camera_alt,
+                                                  color: Colors.white,
+                                                  size: 40,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  image != null
+                                      ? IconButton(
+                                          icon: Icon(
+                                            Icons.image,
+                                            color: Colors
+                                                .grey, // เปลี่ยนสีของไอคอนที่นี่
+                                          ),
+                                          iconSize: 50.0,
+                                          onPressed: () {
+                                            _viewFullImage();
+                                          },
+                                        )
+                                      : SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.2), // ไม่แสดง IconButton หาก image เป็น null
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
                     ),
                   ),
                 ),
@@ -392,24 +392,13 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
                     40, // ความสูงตอนที่ยังไม่ดึงขึ้น (สามารถปรับเป็นค่าที่ต้องการได้)
                 body: Column(
                   children: [
-                    FilledButton(
-                        onPressed: () async {
-                          var postion = await _determinePosition();
-                          log('${postion.latitude} ${postion.longitude}');
-
-                          latLng = LatLng(postion.latitude, postion.longitude);
-                          mapController.move(latLng, mapController.camera.zoom);
-
-                          setState(() {});
-                        },
-                        child: const Text('Get Location')),
                     Expanded(
                       child: Container(
                         width: double.infinity, // ขนาดความกว้างที่ต้องการ
                         child: FlutterMap(
                           mapController: mapController,
                           options: MapOptions(
-                            initialCenter: sen,
+                            initialCenter: re,
                             initialZoom: 15.0,
                           ),
                           children: [
@@ -422,7 +411,7 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
                             MarkerLayer(
                               markers: [
                                 Marker(
-                                  point: sen,
+                                  point: re,
                                   width: 40,
                                   height: 40,
                                   child: Container(
@@ -443,7 +432,7 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
                                   ),
                                 ),
                                 Marker(
-                                  point: re, // จุดปลายทาง
+                                  point: sen, // จุดปลายทาง
                                   width: 40,
                                   height: 40,
                                   child: Container(
@@ -487,7 +476,12 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
                             PolylineLayer(
                               polylines: [
                                 Polyline(
-                                  points: [sen, ri], // ลิสต์ของจุดเส้นทาง
+                                  points: status == 'กำลังเดินทาง'
+                                      ? [re, ri]
+                                      : [
+                                          sen,
+                                          ri
+                                        ], // ตรวจสอบสถานะและเปลี่ยนจุดเส้นทาง
                                   color: Colors.blue,
                                   strokeWidth: 4.0,
                                 ),
@@ -518,50 +512,55 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
                 ),
                 child: ElevatedButton(
                   onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text('ยืนยันการทำงาน'),
-                          content: Text('คุณต้องการดำเนินการต่อหรือไม่?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context)
-                                    .pop(); // ปิด dialog เมื่อกด Cancel
-                              },
-                              child: Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context)
-                                    .pop(); // ปิด dialog เมื่อกด Confirm
+                    confirmjobDialog();
+                    // showDialog(
+                    //   context: context,
+                    //   builder: (BuildContext context) {
+                    //     return AlertDialog(
+                    //       title: Text(
+                    //         'ยืนยันการทำงาน',
+                    //         style: TextStyle(color: Colors.white),
+                    //       ),
+                    //       content: Text('คุณต้องการดำเนินการต่อหรือไม่?'),
+                    //       actions: [
+                    //         TextButton(
+                    //           onPressed: () {
+                    //             Navigator.of(context)
+                    //                 .pop(); // ปิด dialog เมื่อกด Cancel
+                    //           },
+                    //           child: Text('Cancel'),
+                    //         ),
+                    //         TextButton(
+                    //           onPressed: () {
+                    //             Navigator.of(context)
+                    //                 .pop(); // ปิด dialog เมื่อกด Confirm
 
-                                // ดำเนินการต่อเมื่อกด Confirm
-                                if (status == '' && image != null) {
-                                  editOrderImage();
-                                  setState(() {
-                                    status = 'กำลังเดินทาง';
-                                    image = null;
-                                  });
-                                } else if (status == 'กำลังเดินทาง' &&
-                                    image != null) {
-                                  editOrderImage();
-                                  setState(() {
-                                    status = 'ส่งสำเร็จ';
-                                    image = null;
-                                  });
-                                } else {
-                                  log('ใส่รูปก่อนยืนยัน');
-                                }
-                                // log('Button tapped');
-                              },
-                              child: Text('Confirm'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
+                    //             // ดำเนินการต่อเมื่อกด Confirm
+                    //             if (status == '' && image != null) {
+                    //               editOrderImage();
+                    //               setState(() {
+                    //                 status = 'กำลังเดินทาง';
+                    //                 image = null;
+                    //               });
+                    //             } else if (status == 'กำลังเดินทาง' &&
+                    //                 image != null) {
+                    //               editOrderImage();
+                    //               setState(() {
+                    //                 status = 'ส่งสำเร็จ';
+                    //                 image = null;
+                    //               });
+                    //             } else {
+                    //               _showImageWarningDialog(context);
+                    //               log('ใส่รูปก่อนยืนยัน');
+                    //             }
+                    //             // log('Button tapped');
+                    //           },
+                    //           child: Text('Confirm'),
+                    //         ),
+                    //       ],
+                    //     );
+                    //   },
+                    // );
                   },
                   child: Text(
                     _getStatusText(status),
@@ -772,9 +771,9 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
           SenderGetResponses = senderGetResponseFromJson(res.body);
           // อัพเดทพิกัดแผนที่จากข้อมูลใน API
           var user = SenderGetResponses.first; // สมมติว่าใช้ผู้ใช้งานคนแรก
-          sen = LatLng(
-              user.customerLat, user.customerLong); // ใช้ข้อมูล GPS จาก API
           re = LatLng(
+              user.customerLat, user.customerLong); // ใช้ข้อมูล GPS จาก API
+          sen = LatLng(
               user.senderLat, user.senderLong); // จุดปลายทาง (ตัวอย่างพิกัด)
 
           mapController.move(sen, mapController.camera.zoom);
@@ -845,7 +844,7 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
         // Check if the widget is still mounted before navigating
         // if (!context.mounted) return;
         Navigator.of(context).pop(); // ปิด dialog
-        Get.to(() => const RiderGPSPage()); // เปลี่ยนไปที่หน้าถัดไป
+        Get.offAll(() => const RiderGPSPage()); // เปลี่ยนไปที่หน้าถัดไป
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Status Changed successfully!')),
@@ -905,6 +904,7 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
   }
 
   Future<void> _uploadFile() async {
+    _showLoadingDialog();
     if (image == null) {
       print('No file selected!');
       return;
@@ -964,6 +964,9 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
       }
     } catch (e) {
       print('Error occurred while uploading file: $e');
+    } finally {
+      // ปิด Dialog หลังจากโหลดข้อมูลเสร็จ
+      Navigator.of(context).pop();
     }
   }
 
@@ -1022,7 +1025,7 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
         return Colors.grey; // สีเทาสำหรับสถานะ "รอไรเดอร์"
       case '':
         return Colors
-            .deepOrangeAccent; // สีส้มสำหรับสถานะ "ไรเดอร์รับงาน" และ "กำลังเดินทาง"
+            .green; // สีส้มสำหรับสถานะ "ไรเดอร์รับงาน" และ "กำลังเดินทาง"
       case 'กำลังเดินทาง':
         return Colors
             .yellowAccent; // สีส้มสำหรับสถานะ "ไรเดอร์รับงาน" และ "กำลังเดินทาง"
@@ -1046,5 +1049,148 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
       default:
         return 'สถานะไม่ทราบ';
     }
+  }
+
+  void _showImageWarningDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20.0)),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.warning, color: Colors.orange, size: 30),
+              SizedBox(width: 10),
+              Text(
+                'แจ้งเตือน',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                  color: Colors.redAccent,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'คุณยังไม่ได้เลือกรูปภาพ กรุณาเลือกรูปภาพก่อนดำเนินการต่อ',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.black87,
+            ),
+          ),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // ปิด dialog เมื่อกดปุ่ม OK
+              },
+              child: Text(
+                'OK',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void confirmjobDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.blueGrey[900], // พื้นหลังของ AlertDialog
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20.0)),
+          ),
+          title: Text(
+            'ยืนยันสถาณะ',
+            style: TextStyle(
+              color: Colors.white, // สีตัวอักษรหัวข้อ
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            'คุณต้องการดำเนินการต่อหรือไม่?',
+            style: TextStyle(
+              color: Colors.white70, // สีตัวอักษรเนื้อหา
+              fontSize: 18,
+            ),
+          ),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // ปิด dialog เมื่อกด Cancel
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Colors.white, // สีของปุ่ม Cancel
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.greenAccent[400],
+                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // ปิด dialog เมื่อกด Confirm
+
+                // ดำเนินการต่อเมื่อกด Confirm
+                if (status == '' && image != null) {
+                  editOrderImage();
+                  setState(() {
+                    status = 'กำลังเดินทาง';
+                    image = null;
+                  });
+                } else if (status == 'กำลังเดินทาง' && image != null) {
+                  editOrderImage();
+                  setState(() {
+                    status = 'ส่งสำเร็จ';
+                    image = null;
+                  });
+                } else {
+                  _showImageWarningDialog(context);
+                  log('ใส่รูปก่อนยืนยัน');
+                }
+              },
+              child: Text(
+                'Confirm',
+                style: TextStyle(
+                  color: Colors.white, // สีของปุ่ม Confirm
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

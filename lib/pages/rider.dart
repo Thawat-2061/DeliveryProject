@@ -172,6 +172,8 @@ class _RiderPageState extends State<RiderPage> {
                                           barrierDismissible: true,
                                           builder: (BuildContext context) {
                                             return AlertDialog(
+                                              backgroundColor: Colors
+                                                  .grey[900], // กำหนดสีพื้นหลัง
                                               title: Text(
                                                 'ชื่อสินค้า ${data.name}',
                                                 style: TextStyle(
@@ -180,9 +182,49 @@ class _RiderPageState extends State<RiderPage> {
                                               content: Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  // Text('ชื่อ: ${data.name}'),
+                                                  // รูปภาพจาก URL พร้อมการโหลด
+                                                  Image.network(
+                                                    data.image, // เปลี่ยน URL ตามจริง
+                                                    height:
+                                                        300, // กำหนดขนาดของรูปภาพ
+                                                    width: 300,
+                                                    fit: BoxFit
+                                                        .cover, // กำหนดลักษณะการจัดรูปภาพ
+                                                    loadingBuilder: (BuildContext
+                                                            context,
+                                                        Widget child,
+                                                        ImageChunkEvent?
+                                                            loadingProgress) {
+                                                      if (loadingProgress ==
+                                                          null) {
+                                                        return child;
+                                                      } else {
+                                                        return Center(
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                            value: loadingProgress
+                                                                        .expectedTotalBytes !=
+                                                                    null
+                                                                ? loadingProgress
+                                                                        .cumulativeBytesLoaded /
+                                                                    loadingProgress
+                                                                        .expectedTotalBytes!
+                                                                : null,
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                  ),
+                                                  SizedBox(
+                                                      height:
+                                                          10), // เว้นระยะห่าง
+                                                  // ข้อความรายละเอียด
                                                   Text(
-                                                      'รายละเอียด: ${data.detail}'),
+                                                    'รายละเอียด: ${data.detail}',
+                                                    style: TextStyle(
+                                                        color: Colors
+                                                            .white), // เปลี่ยนสีข้อความให้เข้ากับพื้นหลัง
+                                                  ),
                                                 ],
                                               ),
                                             );
@@ -354,6 +396,8 @@ class _RiderPageState extends State<RiderPage> {
     setState(() {
       this.riderID = riderId;
       this.riderImage = riderImage;
+
+      // this.userUsername = userUsername;
       // this.userEmail = userEmail;
       // this.userImage = userImage;
       log('riderID: $riderID');
