@@ -29,9 +29,8 @@ class _RiEditPageState extends State<RiEditPage> {
       _selectedIndex = index;
     });
 
-     switch (index) {
+    switch (index) {
       case 0:
-
         break;
       case 1:
         Get.to(() => const RiProPage());
@@ -320,8 +319,8 @@ class _RiEditPageState extends State<RiEditPage> {
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
-                              backgroundColor:
-                                  Colors.blueGrey[900], // พื้นหลังของ AlertDialog
+                              backgroundColor: Colors
+                                  .blueGrey[900], // พื้นหลังของ AlertDialog
                               shape: RoundedRectangleBorder(
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(20.0)),
@@ -449,7 +448,7 @@ class _RiEditPageState extends State<RiEditPage> {
           ),
         ),
       ),
-  bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: BottomNavigationBar(
         backgroundColor: const Color.fromARGB(
             95, 46, 45, 45), // สีพื้นหลังของ BottomNavigationBar
         selectedItemColor:
@@ -578,7 +577,7 @@ class _RiEditPageState extends State<RiEditPage> {
             final storage = GetStorage();
             await storage.write('RiderImage', data['url'].toString());
 
-            Get.offAll(const RiProPage());
+            Get.to(const RiProPage());
           }
         } else {
           print('Error: URL not found in response');
@@ -590,7 +589,7 @@ class _RiEditPageState extends State<RiEditPage> {
       }
     } catch (e) {
       print('Error occurred while uploading file: $e');
-    }finally {
+    } finally {
       // ปิด Dialog หลังจากโหลดข้อมูลเสร็จ
       Navigator.of(context).pop();
     }
@@ -664,7 +663,7 @@ class _RiEditPageState extends State<RiEditPage> {
     super.dispose();
   }
 
-    void _showLoadingDialog() {
+  void _showLoadingDialog() {
     // โลหด
     showDialog(
       context: context,

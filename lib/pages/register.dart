@@ -35,6 +35,7 @@ class _RegisterPageState extends State<RegisterPage> {
   int _fillIndex = 0; // กำหนดค่าเริ่มต้น
   final ImagePicker picker = ImagePicker();
   XFile? image; // ตัวแปรเพื่อเก็บภาพที่เลือก
+  var upImage;
 
   TextEditingController usernameCtl = TextEditingController();
   TextEditingController emailCtl = TextEditingController();
@@ -90,15 +91,53 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   // วงกลมที่มีไอคอนกล้องถ่ายรูปตรงกลาง
                   GestureDetector(
-                    onTap: () async {
-                      image =
-                          await picker.pickImage(source: ImageSource.gallery);
-                      if (image != null) {
-                        log(image!.path.toString());
-                        setState(() {});
-                      } else {
-                        log('No Image');
-                      }
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return SafeArea(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                ListTile(
+                                  leading: Icon(Icons.photo_library),
+                                  title: Text('เลือกจากแกลเลอรี่'),
+                                  onTap: () async {
+                                    Navigator.of(context).pop();
+                                    final image = await picker.pickImage(
+                                        source: ImageSource.gallery);
+                                    if (image != null) {
+                                      setState(() {
+                                        this.image = image;
+                                      });
+                                      log(image.path);
+                                    } else {
+                                      log('No Image Selected');
+                                    }
+                                  },
+                                ),
+                                ListTile(
+                                  leading: Icon(Icons.camera_alt),
+                                  title: Text('ถ่ายภาพ'),
+                                  onTap: () async {
+                                    Navigator.of(context).pop();
+                                    final image = await picker.pickImage(
+                                        source: ImageSource.camera);
+                                    if (image != null) {
+                                      setState(() {
+                                        this.image = image;
+                                      });
+                                      log(image.path);
+                                    } else {
+                                      log('No Image Taken');
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
                     },
                     child: Container(
                       width: 150,
@@ -844,7 +883,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                         0.4, // ปรับความกว้างตามขนาดหน้าจอ
                                     height: 50,
                                     child: GestureDetector(
-                                      onTap: () {
+                                      onTap: () async {
                                         log('---------------------------------------');
                                         log('Username: $username');
                                         log('Phone: $phone');
@@ -855,6 +894,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                         log('compass: $compass');
                                         log('Selected Index: $selectedIndex'); // Log ค่า index
                                         if (_fillIndex == 0) {
+                                          await _uploadFile();
+
                                           RegisterUser(
                                             context,
                                             usernameCtl,
@@ -1004,8 +1045,7 @@ class _RegisterPageState extends State<RegisterPage> {
       'Email': emailCtl.text,
       'Password': passCtl.text,
       'Phone': phoneCtl.text,
-      'Image':
-          "https://i.pinimg.com/736x/0d/b5/da/0db5da143c7bf4ace9d3635bd4e35fcc.jpg",
+      'Image': upImage,
       'Address': addressCtl.text,
       'GPS_Latitude': latLng.latitude, // ใช้ค่าละติจูดที่ได้
       'GPS_Longitude': latLng.longitude, // ใช้ค่าลองจิจูดที่ได้
@@ -1187,6 +1227,115 @@ class _RegisterPageState extends State<RegisterPage> {
         onOkPressed();
       }
     });
+  }
+
+  Future<void> _pickImage() async {
+    // แสดงตัวเลือกให้ผู้ใช้เลือกระหว่างกล้องและแกลอรี่
+    showModalBottomSheet(
+      context: context, // ใช้ BuildContext ที่ถูกต้องจาก Flutter
+      builder: (BuildContext modalContext) {
+        // เปลี่ยนชื่อที่นี่
+        return Container(
+          height: 150,
+          child: Column(
+            children: [
+              ListTile(
+                leading: Icon(Icons.camera),
+                title: Text('Take a Photo'),
+                onTap: () async {
+                  Navigator.of(modalContext).pop(); // ปิด modal
+                  await _selectImage(ImageSource.camera); // เลือกภาพจากกล้อง
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.photo),
+                title: Text('Choose from Gallery'),
+                onTap: () async {
+                  Navigator.of(modalContext).pop(); // ปิด modal
+                  await _selectImage(ImageSource.gallery); // เลือกภาพจากแกลอรี่
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+// ฟังก์ชันสำหรับเลือกภาพจากแหล่งต่าง ๆ
+  Future<void> _selectImage(ImageSource source) async {
+    final pickedFile = await picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        image = XFile(pickedFile.path);
+      });
+      // เรียกใช้งานฟังก์ชันอัปโหลดไฟล์หลังเลือกภาพ
+    }
+  }
+
+  Future<void> _uploadFile() async {
+    _showLoadingDialog();
+    if (image == null) {
+      print('No file selected!');
+      return;
+    }
+
+    try {
+      // สร้าง MultipartRequest โดยใช้ $url
+      var request = http.MultipartRequest('POST', Uri.parse("$url/upload/"));
+      // String fileName = path.basename(image!.path);
+
+      // เพิ่มไฟล์ไปยัง request
+      request.files.add(await http.MultipartFile.fromPath(
+        'file', // ชื่อฟิลด์ที่เซิร์ฟเวอร์คาดหวัง
+        image!.path,
+        // filename: fileName, // ตั้งชื่อไฟล์ตามที่เซิร์ฟเวอร์ต้องการ
+      ));
+
+      // ส่ง request
+      final response = await request.send();
+
+      // รับข้อมูลที่ตอบกลับ
+      final responseData = await http.Response.fromStream(response);
+      print('Response body: ${responseData.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(responseData.body);
+        setState(() {
+          this.upImage = data['url'].toString();
+        });
+        log(data.toString()); // แสดงข้อมูลที่ได้รับ
+
+        print('File uploaded successfully: $data');
+      } else {
+        print('Error uploading file: ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      print('Error occurred while uploading file: $e');
+    } finally {
+      // ปิด Dialog หลังจากโหลดข้อมูลเสร็จ
+    }
+  }
+
+  void _showLoadingDialog() {
+    // โลหด
+    showDialog(
+      context: context,
+      barrierDismissible: false, // ป้องกันการปิด dialog โดยคลิกที่ด้านนอก
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent, // พื้นหลังโปร่งใส
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(), // แสดงวงกลมหมุน
+              SizedBox(height: 15),
+              Text("Loading...", style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   // Future<Map<String, double>> getCoordinates(String address) async {
