@@ -526,20 +526,31 @@ class _CreatePageState extends State<CreatePage> {
                                                       MarkerLayer(
                                                         markers: [
                                                           Marker(
-                                                            point: latLng,
+                                                            point:
+                                                                latLng, // จุดปลายทาง
                                                             width: 40,
                                                             height: 40,
-                                                            child: SizedBox(
-                                                              width: 40,
-                                                              height: 40,
-                                                              child: Icon(
-                                                                  Icons
-                                                                      .motorcycle_sharp,
-                                                                  color: Colors
-                                                                      .red),
+                                                            child: Container(
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: Colors
+                                                                    .white, // สีพื้นหลัง
+                                                                shape: BoxShape
+                                                                    .circle, // ทำให้ขอบเป็นวงกลม
+                                                                border: Border.all(
+                                                                    color: Colors
+                                                                        .blue,
+                                                                    width:
+                                                                        2), // ขอบสีน้ำเงิน
+                                                              ),
+                                                              child: ClipOval(
+                                                                child: Icon(
+                                                                    Icons
+                                                                        .person_3,
+                                                                    color: Colors
+                                                                        .red),
+                                                              ),
                                                             ),
-                                                            alignment: Alignment
-                                                                .center,
                                                           ),
                                                         ],
                                                       ),
