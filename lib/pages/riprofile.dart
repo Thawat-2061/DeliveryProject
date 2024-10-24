@@ -74,12 +74,15 @@ class _RiProPageState extends State<RiProPage> {
               Column(
                 children: [
                   ClipOval(
-                    child: Image.network(
-                      '$riderImage',
-                      width: 180.0, // กำหนดความกว้างของวงกลม
-                      height: 180.0, // กำหนดความสูงของวงกลม
-                      fit: BoxFit.cover, // ปรับขนาดภาพให้พอดีกับวงกลม
-                    ),
+                    child: riderImage != null && riderImage.isNotEmpty
+                        ? Image.network(
+                            riderImage, // ตรวจสอบว่า userImage มีค่าและไม่เป็นว่าง
+                            width: 180.0,
+                            height: 180.0,
+                            fit: BoxFit.cover,
+                          )
+                        : Icon(Icons.person,
+                            size: 180), // หากไม่มีภาพจะแสดงไอคอนแทน
                   ),
                   SizedBox(
                     height: 15,

@@ -1310,7 +1310,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _uploadFile() async {
-    _showLoadingDialog();
+    // _showLoadingDialog();
     if (image == null) {
       print('No file selected!');
       return;
@@ -1348,8 +1348,6 @@ class _RegisterPageState extends State<RegisterPage> {
       }
     } catch (e) {
       print('Error occurred while uploading file: $e');
-    } finally {
-      // ปิด Dialog หลังจากโหลดข้อมูลเสร็จ
     }
   }
 
