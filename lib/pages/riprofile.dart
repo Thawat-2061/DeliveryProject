@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:rider/config/config.dart';
 import 'package:rider/pages/login.dart';
 import 'package:rider/pages/rider.dart';
 import 'package:rider/pages/editpro.dart';
@@ -36,6 +39,23 @@ class _RiProPageState extends State<RiProPage> {
       // เพิ่มกรณีอื่นๆ สำหรับการนำทางไปยังหน้าอื่นๆ ที่นี่
     }
   }
+
+  String url = '';
+  var riderId;
+  var riderEmail;
+  var riderUsername;
+  var riderImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await GetApiEndpoint();
+    await getUserDataFromStorage();
+  }
 //-----------------------------------------------------------
 
   @override
@@ -54,8 +74,8 @@ class _RiProPageState extends State<RiProPage> {
               Column(
                 children: [
                   ClipOval(
-                    child: Image.asset(
-                      'assets/images/icon.png',
+                    child: Image.network(
+                      '$riderImage',
                       width: 180.0, // กำหนดความกว้างของวงกลม
                       height: 180.0, // กำหนดความสูงของวงกลม
                       fit: BoxFit.cover, // ปรับขนาดภาพให้พอดีกับวงกลม
@@ -70,12 +90,12 @@ class _RiProPageState extends State<RiProPage> {
                       Column(
                         children: [
                           Text(
-                            'Triple Superdick',
+                            '$riderUsername',
                             style: TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            'mrdick5555@gmail.com',
+                            '$riderEmail',
                             style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -306,5 +326,39 @@ class _RiProPageState extends State<RiProPage> {
         ],
       ),
     );
+  }
+
+  Future<void> GetApiEndpoint() async {
+    Configguration.getConfig().then(
+      (value) {
+        log('MainUserGet API ');
+        // log(value['apiEndpoint']);
+        setState(() {
+          url = value['apiEndpoint'];
+        });
+      },
+    ).catchError((err) {
+      log(err.toString());
+    });
+  }
+
+  Future<void> getUserDataFromStorage() async {
+    final storage = GetStorage();
+
+    final riderId = storage.read('RiderID');
+    final riderUsername = storage.read('RiderUsername');
+    final riderEmail = storage.read('Email');
+    final riderImage = storage.read('RiderImage');
+    // final riderPhone = storage.read('RiderPhone');
+
+    // log(userUsername);
+
+    setState(() {
+      this.riderId = riderId;
+      this.riderUsername = riderUsername;
+      this.riderEmail = riderEmail;
+      this.riderImage = riderImage;
+      // log(userId);
+    });
   }
 }

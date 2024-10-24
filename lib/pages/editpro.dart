@@ -45,12 +45,13 @@ class _EditproPageState extends State<EditproPage> {
   }
 
 //-----------------------------------------------------------
-  String username = 'AAAA';
-  String email = '';
-  String phone = '';
-  String address = '';
+  String? username;
+  String? email;
+  String? phone;
+  String? address;
   final ImagePicker picker = ImagePicker();
   File? image; // ตัวแปรเพื่อเก็บภาพที่เลือก
+
   String url = '';
   var userId;
   var userImage;
@@ -159,10 +160,7 @@ class _EditproPageState extends State<EditproPage> {
                                   onChanged: (value) {
                                     // หากต้องการอัปเดตค่า username ขณะพิมพ์
                                     setState(() {
-                                      if (value.isNotEmpty) {
-                                        username = value;
-                                        usernameController.text = username;
-                                      }
+                                      username = value;
                                     });
                                   },
 
@@ -217,10 +215,7 @@ class _EditproPageState extends State<EditproPage> {
                                   onChanged: (value) {
                                     // หากต้องการอัปเดตค่า username ขณะพิมพ์
                                     setState(() {
-                                      if (value.isNotEmpty) {
-                                        phone = value;
-                                        phoneController.text = phone;
-                                      }
+                                      phone = value;
                                     });
                                   },
                                   decoration: InputDecoration(
@@ -275,10 +270,7 @@ class _EditproPageState extends State<EditproPage> {
                                   onChanged: (value) {
                                     // หากต้องการอัปเดตค่า username ขณะพิมพ์
                                     setState(() {
-                                      if (value.isNotEmpty) {
-                                        email = value;
-                                        emailController.text = email;
-                                      }
+                                      email = value;
                                     });
                                   },
                                   decoration: InputDecoration(
@@ -332,10 +324,7 @@ class _EditproPageState extends State<EditproPage> {
                                   onChanged: (value) {
                                     // หากต้องการอัปเดตค่า username ขณะพิมพ์
                                     setState(() {
-                                      if (value.isNotEmpty) {
-                                        address = value;
-                                        addressController.text = address;
-                                      }
+                                      address = value;
                                     });
                                   },
                                   decoration: InputDecoration(
@@ -404,10 +393,17 @@ class _EditproPageState extends State<EditproPage> {
                                   onPressed: () {
                                     Navigator.of(context)
                                         .pop(); // ปิดกล่องโต้ตอบเมื่อผู้ใช้ยืนยัน
-
+                                    String updatedUsername =
+                                        username ?? usernameController.text;
+                                    String updatedPhone =
+                                        phone ?? phoneController.text;
+                                    String updatedEmail =
+                                        email ?? emailController.text;
+                                    String updatedAddress =
+                                        address ?? addressController.text;
                                     // เรียกฟังก์ชันแก้ไขข้อมูล
-                                    editPro();
-
+                                    editPro(updatedUsername, updatedPhone,
+                                        updatedEmail, updatedAddress);
                                     // แสดงข้อมูลที่ต้องการ log
                                     log('Username: $username');
                                     log('Email: $email');
@@ -415,7 +411,7 @@ class _EditproPageState extends State<EditproPage> {
                                     log('Address: $address');
 
                                     // หากต้องการไปหน้าอื่นหลังจากยืนยัน
-                                    // Get.to(() => const SenderPage());
+                                    Get.to(() => const SenderPage());
                                   },
                                 ),
                               ],
@@ -646,29 +642,30 @@ class _EditproPageState extends State<EditproPage> {
     });
   }
 
-  void editPro() async {
+  void editPro(
+      String username, String phone, String email, String address) async {
     await _uploadFile();
     final resp = await http.put(
-      Uri.parse("$url/profile/update"),
+      Uri.parse("$url/profile/editUser"),
       headers: {"Content-Type": "application/json; charset=utf-8"},
       body: jsonEncode({
         "UserID": userId,
-        "Username": usernameController,
-        "Phone": phoneController,
-        "Email": emailController,
-        "Address": addressController
+        "Username": username,
+        "Phone": phone,
+        "Email": email,
+        "Address": address
       }),
     );
     if (resp.statusCode == 200) {
       log("Upload Firebase");
       final storage = GetStorage();
       // await storage.write('Image', data['url'].toString() ?? '');
-      await storage.write('Username', usernameController.text.toString());
-      await storage.write('Email', emailController.toString());
-      await storage.write('UserPhone', phoneController.toString());
-      await storage.write('Address', addressController.toString());
+      await storage.write('Username', username.toString());
+      await storage.write('Email', email.toString());
+      await storage.write('UserPhone', phone.toString());
+      await storage.write('Address', address.toString());
       await getUserDataFromStorage();
-      Get.offAll(const ProfilePage());
+      // Get.offAll(const ProfilePage());
     }
   }
 

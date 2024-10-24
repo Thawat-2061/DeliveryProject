@@ -1,11 +1,17 @@
+import 'dart:convert';
 import 'dart:developer';
 
+import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:rider/config/config.dart';
+import 'package:rider/pages/profile.dart';
 import 'package:rider/pages/rider.dart';
 import 'package:rider/pages/ridergps.dart';
 import 'package:rider/pages/riprofile.dart';
+import 'package:http/http.dart' as http;
 
 class RiPassPage extends StatefulWidget {
   const RiPassPage({super.key});
@@ -35,9 +41,24 @@ class _RiPassPageState extends State<RiPassPage> {
   }
 
 //-----------------------------------------------------------
-  TextEditingController passCtl = TextEditingController();
-  TextEditingController compassCtl = TextEditingController();
   bool _isObscured = true; // สถานะซ่อนรหัสผ่าน
+  TextEditingController oldpassCtl = TextEditingController();
+  TextEditingController passCtl = TextEditingController();
+  TextEditingController conpassCtl = TextEditingController();
+  var riderId;
+  var riderPass;
+  String url = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await GetApiEndpoint();
+    await getRiderDataFromStorage();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,184 +66,252 @@ class _RiPassPageState extends State<RiPassPage> {
       appBar: AppBar(
         title: Text('Back'),
       ),
-      body: Container(
-        child: Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Create new password',
-                style: TextStyle(fontSize: 30),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 10.0),
-                child: Text(
-                  'Your new password must be different from previous used passwords.',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+      body: SingleChildScrollView(
+        child: Container(
+          child: Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Create new password',
+                  style: TextStyle(fontSize: 30),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 30.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: passCtl, // เก็บค่าที่กรอกในตัวแปร pass
-                      keyboardType: TextInputType.visiblePassword,
-                      obscureText:
-                          _isObscured, // ซ่อนข้อความที่กรอกตามสถานะ _isObscured
-                      decoration: InputDecoration(
-                        labelText:
-                            "Password", // ข้อความ "Password" ภายใน TextField
-                        labelStyle: TextStyle(
-                          color: Colors.white, // สีของข้อความ "Password"
-                        ),
-                        prefixIcon: Icon(
-                          Icons.lock, // เพิ่มไอคอนแม่กุญแจ
-                          color: Colors.white, // สีของไอคอน
-                        ),
-                        //------------------ซ่อนรหัส----------------------------------------------------
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isObscured
-                                ? Icons
-                                    .visibility_off // ไอคอนปิดตาเมื่อซ่อนรหัสผ่าน
-                                : Icons
-                                    .visibility, // ไอคอนเปิดตาเมื่อแสดงรหัสผ่าน
-                            color: Colors.white,
+                Padding(
+                  padding: EdgeInsets.only(top: 10.0),
+                  child: Text(
+                    'Your new password must be different from previous used passwords.',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 30.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: oldpassCtl, // เก็บค่าที่กรอกในตัวแปร pass
+                        keyboardType: TextInputType.visiblePassword,
+                        obscureText:
+                            _isObscured, // ซ่อนข้อความที่กรอกตามสถานะ _isObscured
+                        decoration: InputDecoration(
+                          labelText:
+                              "Old Password", // ข้อความ "Password" ภายใน TextField
+                          labelStyle: TextStyle(
+                            color: Colors.white, // สีของข้อความ "Password"
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _isObscured =
-                                  !_isObscured; // เปลี่ยนสถานะซ่อน/แสดงรหัสผ่าน
-                            });
+                          prefixIcon: Icon(
+                            Icons.lock, // เพิ่มไอคอนแม่กุญแจ
+                            color: Colors.white, // สีของไอคอน
+                          ),
+                          //------------------ซ่อนรหัส----------------------------------------------------
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isObscured
+                                  ? Icons
+                                      .visibility_off // ไอคอนปิดตาเมื่อซ่อนรหัสผ่าน
+                                  : Icons
+                                      .visibility, // ไอคอนเปิดตาเมื่อแสดงรหัสผ่าน
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isObscured =
+                                    !_isObscured; // เปลี่ยนสถานะซ่อน/แสดงรหัสผ่าน
+                              });
+                            },
+                          ),
+                          //----------------------------------------------------------------------
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: BorderSide(
+                              color: Colors.white, // สีขอบเมื่อไม่ focus
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            borderSide: BorderSide(
+                              color: Colors.white, // สีขอบเมื่อ focus
+                            ),
+                          ),
+                        ),
+                        style:
+                            TextStyle(color: Colors.white), // สีข้อความที่กรอก
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'Confirm Your Older Password',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 30.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: passCtl, // เก็บค่าที่กรอกในตัวแปร pass
+                        keyboardType: TextInputType.visiblePassword,
+                        obscureText:
+                            _isObscured, // ซ่อนข้อความที่กรอกตามสถานะ _isObscured
+                        decoration: InputDecoration(
+                          labelText:
+                              "Password", // ข้อความ "Password" ภายใน TextField
+                          labelStyle: TextStyle(
+                            color: Colors.white, // สีของข้อความ "Password"
+                          ),
+                          prefixIcon: Icon(
+                            Icons.lock, // เพิ่มไอคอนแม่กุญแจ
+                            color: Colors.white, // สีของไอคอน
+                          ),
+                          //------------------ซ่อนรหัส----------------------------------------------------
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isObscured
+                                  ? Icons
+                                      .visibility_off // ไอคอนปิดตาเมื่อซ่อนรหัสผ่าน
+                                  : Icons
+                                      .visibility, // ไอคอนเปิดตาเมื่อแสดงรหัสผ่าน
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isObscured =
+                                    !_isObscured; // เปลี่ยนสถานะซ่อน/แสดงรหัสผ่าน
+                              });
+                            },
+                          ),
+                          //----------------------------------------------------------------------
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: BorderSide(
+                              color: Colors.white, // สีขอบเมื่อไม่ focus
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            borderSide: BorderSide(
+                              color: Colors.white, // สีขอบเมื่อ focus
+                            ),
+                          ),
+                        ),
+                        style:
+                            TextStyle(color: Colors.white), // สีข้อความที่กรอก
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'Must be at least 999 Characters.',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: conpassCtl, // เก็บค่าที่กรอกในตัวแปร pass
+                        keyboardType: TextInputType.visiblePassword,
+                        obscureText: true, // ซ่อนข้อความที่กรอก
+                        decoration: InputDecoration(
+                          labelText:
+                              "Comfirm password", // ข้อความ "Password" ภายใน TextField
+                          labelStyle: TextStyle(
+                            color: Colors.white, // สีของข้อความ "Password"
+                          ),
+                          prefixIcon: Icon(
+                            Icons.lock, // เพิ่มไอคอนแม่กุญแจ
+                            color: Colors.white, // สีของไอคอน
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: BorderSide(
+                              color: Colors.white, // สีขอบเมื่อไม่ focus
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            borderSide: BorderSide(
+                              color: Colors.white, // สีขอบเมื่อ focus
+                            ),
+                          ),
+                        ),
+                        style:
+                            TextStyle(color: Colors.white), // สีข้อความที่กรอก
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'Bath passwords must match.',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 20.0),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 50,
+                        child: GestureDetector(
+                          onTap: () {
+                            _showConfirmationDialog(context);
                           },
-                        ),
-                        //----------------------------------------------------------------------
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          borderSide: BorderSide(
-                            color: Colors.white, // สีขอบเมื่อไม่ focus
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30.0),
-                          borderSide: BorderSide(
-                            color: Colors.white, // สีขอบเมื่อ focus
-                          ),
-                        ),
-                      ),
-                      style: TextStyle(color: Colors.white), // สีข้อความที่กรอก
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'Must be at least 999 Characters.',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: compassCtl, // เก็บค่าที่กรอกในตัวแปร pass
-                      keyboardType: TextInputType.visiblePassword,
-                      obscureText: true, // ซ่อนข้อความที่กรอก
-                      decoration: InputDecoration(
-                        labelText:
-                            "Comfirm password", // ข้อความ "Password" ภายใน TextField
-                        labelStyle: TextStyle(
-                          color: Colors.white, // สีของข้อความ "Password"
-                        ),
-                        prefixIcon: Icon(
-                          Icons.lock, // เพิ่มไอคอนแม่กุญแจ
-                          color: Colors.white, // สีของไอคอน
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          borderSide: BorderSide(
-                            color: Colors.white, // สีขอบเมื่อไม่ focus
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30.0),
-                          borderSide: BorderSide(
-                            color: Colors.white, // สีขอบเมื่อ focus
-                          ),
-                        ),
-                      ),
-                      style: TextStyle(color: Colors.white), // สีข้อความที่กรอก
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'Bath passwords must match.',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 50,
-                      child: GestureDetector(
-                        onTap: () {
-                          _showConfirmationDialog(context);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(50.0), // มุมโค้งของปุ่ม
-                            gradient: LinearGradient(
-                              colors: [
-                                Color.fromARGB(255, 214, 78, 51),
-                                Color.fromARGB(255, 233, 200, 93)
-                              ], // ไล่เฉดสีจากส้มเข้มไปอ่อน
-                              begin: Alignment.centerLeft, // เริ่มไล่จากซ้าย
-                              end: Alignment.centerRight, // ไปจบที่ขวา
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.5), // สีเงา
-                                spreadRadius: 1, // การกระจายของเงา
-                                blurRadius: 5, // ความเบลอของเงา
-                                offset: Offset(2, 2), // ระยะห่างของเงา
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.circular(50.0), // มุมโค้งของปุ่ม
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color.fromARGB(255, 214, 78, 51),
+                                  Color.fromARGB(255, 233, 200, 93)
+                                ], // ไล่เฉดสีจากส้มเข้มไปอ่อน
+                                begin: Alignment.centerLeft, // เริ่มไล่จากซ้าย
+                                end: Alignment.centerRight, // ไปจบที่ขวา
                               ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              "Confirm",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.5), // สีเงา
+                                  spreadRadius: 1, // การกระจายของเงา
+                                  blurRadius: 5, // ความเบลอของเงา
+                                  offset: Offset(2, 2), // ระยะห่างของเงา
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                "Confirm",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color.fromARGB(
-            95, 46, 45, 45), // สีพื้นหลังของ BottomNavigationBar
+        backgroundColor:
+            const Color(0xFF171716), // สีพื้นหลังของ BottomNavigationBar
         selectedItemColor:
             const Color.fromARGB(255, 240, 65, 42), // สีของไอคอนที่ถูกเลือก
         unselectedItemColor: Colors.grey, // สีของไอคอนที่ไม่ถูกเลือก
@@ -241,20 +330,20 @@ class _RiPassPageState extends State<RiPassPage> {
         ),
         items: [
           BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/images/cyc.png', // ระบุพาธของรูปภาพ
-              width: 100, // กำหนดความกว้างของรูปภาพ
-              height: 50, // กำหนดความสูงของรูปภาพ
-            ),
-            label: 'รับออเดอร์', // ข้อความของรายการ
+            icon: Icon(Icons.unarchive, size: 30), // ไอคอนของรายการ
+            label: 'Sender', // ข้อความของรายการ
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.archive, size: 30), // ไอคอนของรายการ
+            label: 'Receiver', // ข้อความของรายการ
           ),
           BottomNavigationBarItem(
             icon: Image.asset(
               'assets/images/profile.png', // ระบุพาธของรูปภาพ
-              width: 50, // กำหนดความกว้างของรูปภาพ
-              height: 50, // กำหนดความสูงของรูปภาพ
+              width: 30, // กำหนดความกว้างของรูปภาพ
+              height: 30, // กำหนดความสูงของรูปภาพ
             ),
-            label: 'ข้อมูลส่วนตัว', // ข้อความของรายการ
+            label: 'Profile', // ข้อความของรายการ
           ),
         ],
       ),
@@ -305,16 +394,11 @@ class _RiPassPageState extends State<RiPassPage> {
                   ),
                 ),
                 TextButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      passChange(context, oldpassCtl, passCtl, conpassCtl);
+
                       // ปิด dialog และไปที่หน้าถัดไป
                       Navigator.of(context).pop(); // ปิด dialog
-                      Get.to(() => const RiProPage()); // เปลี่ยนไปที่หน้าถัดไป
-                      log('Password: ' + passCtl.text);
-                      log('Comfirmppass ' + compassCtl.text);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Password changed successfully!')),
-                      );
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -334,6 +418,120 @@ class _RiPassPageState extends State<RiPassPage> {
               ],
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void passChange(BuildContext context, TextEditingController oldpassCtl,
+      TextEditingController passCtl, TextEditingController conpassCtl) async {
+    // Validate if all fields are filled
+    if (oldpassCtl.text.isEmpty ||
+        passCtl.text.isEmpty ||
+        conpassCtl.text.isEmpty) {
+      log('Please fill all the fields');
+      return; // Exit if any field is empty
+    }
+
+    // Check if the old password matches the stored password
+    final passwordMatch = BCrypt.checkpw(oldpassCtl.text, riderPass);
+    log('Password match: $passwordMatch');
+    if (!passwordMatch) {
+      log("Old password does not match the stored password");
+      return; // Exit if the password does not match
+    }
+
+    // Validate if new passwords match
+    if (passCtl.text != conpassCtl.text) {
+      log("New passwords do not match");
+      return; // Exit if new passwords do not match
+    }
+    _showLoadingDialog();
+
+    try {
+      // Send PUT request to the API
+      log('Sending PUT request...');
+      final response = await http.put(
+        Uri.parse("$url/login/passRider"),
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+        body: jsonEncode({"RiderID": riderId, "Password": passCtl.text}),
+      );
+
+      log('Response status: ${response.statusCode}');
+      log('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        log('Password changed successfully!');
+        // final storage = GetStorage();
+        // await storage.write('RiderPassword', passCtl.text.toString());
+        // await getRiderDataFromStorage();
+        await Get.to(() => const RiProPage()); // Navigate to the next page
+
+        // Check if the widget is still mounted before navigating
+        if (!context.mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password changed successfully!')),
+        );
+      } else if (response.statusCode == 409) {
+        log('Ridername already exists');
+      } else {
+        log('Error: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      log('An error occurred: $e'); // Log any errors that occur during the request
+    }
+  }
+
+  Future<void> GetApiEndpoint() async {
+    Configguration.getConfig().then(
+      (value) {
+        log('MainRiderGet API ');
+        // log(value['apiEndpoint']);
+        setState(() {
+          url = value['apiEndpoint'];
+        });
+      },
+    ).catchError((err) {
+      log(err.toString());
+    });
+  }
+
+  Future<void> getRiderDataFromStorage() async {
+    final storage = GetStorage();
+
+    final riderId = storage.read('RiderID');
+    final riderPass = storage.read('RiderPassword');
+    // final riderEmail = storage.read('Email');
+    // final riderImage = storage.read('Image');
+
+    // log(riderRidername);
+
+    setState(() {
+      this.riderId = riderId;
+      this.riderPass = riderPass;
+      // this.riderEmail = riderEmail;
+      // this.riderImage = riderImage;
+      // log(riderId);
+    });
+  }
+
+  void _showLoadingDialog() {
+    // โลหด
+    showDialog(
+      context: context,
+      barrierDismissible: false, // ป้องกันการปิด dialog โดยคลิกที่ด้านนอก
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent, // พื้นหลังโปร่งใส
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(), // แสดงวงกลมหมุน
+              SizedBox(height: 15),
+              Text("Loading...", style: TextStyle(color: Colors.white)),
+            ],
+          ),
         );
       },
     );

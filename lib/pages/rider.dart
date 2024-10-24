@@ -31,7 +31,7 @@ class _RiderPageState extends State<RiderPage> {
       case 0:
         break;
       case 1:
-        Get.to(() => const RiProPage());
+        Get.offAll(() => const RiProPage());
 
         break;
 
@@ -345,7 +345,7 @@ class _RiderPageState extends State<RiderPage> {
     final storage = GetStorage();
 
     final riderId = storage.read('RiderID');
-    // final userUsername = storage.read('Username');
+    final riderImage = storage.read('RiderImage');
     // final userEmail = storage.read('Email');
     // final userImage = storage.read('Image');
 
@@ -353,7 +353,7 @@ class _RiderPageState extends State<RiderPage> {
 
     setState(() {
       this.riderID = riderId;
-      // this.userUsername = userUsername;
+      this.riderImage = riderImage;
       // this.userEmail = userEmail;
       // this.userImage = userImage;
       log('riderID: $riderID');

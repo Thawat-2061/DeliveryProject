@@ -468,6 +468,11 @@ class _LoginPageState extends State<LoginPage> {
             await storage.write('RiderID', rider['RiderID'].toString());
             await storage.write('RiderUsername', rider['Username'].toString());
             await storage.write('Email', rider['Email'].toString());
+            await storage.write('RiderPhone', rider['Phone']?.toString() ?? '');
+            await storage.write('RiderImage', rider['Image']?.toString() ?? '');
+            // await storage.write('Address', rider['Address']?.toString() ?? '');
+            await storage.write(
+                'RiderPassword', rider['Password']?.toString() ?? '');
 
             Navigator.of(context).pop();
 
