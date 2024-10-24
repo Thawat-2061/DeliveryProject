@@ -17,6 +17,7 @@ import 'package:rider/pages/riprofile.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
 
 class RiderviewPage extends StatefulWidget {
   const RiderviewPage({super.key});
@@ -29,6 +30,10 @@ class _RiderviewPageState extends State<RiderviewPage> {
   MapController mapController = MapController();
   var db = FirebaseFirestore.instance;
   StreamSubscription<DocumentSnapshot>? _subscription;
+
+  final FirebaseFirestore db2 = FirebaseFirestore.instance;
+  StreamSubscription<Position>? _positionStream;
+  StreamSubscription<DocumentSnapshot>? _statusStream;
 
   LatLng sen = LatLng(0, 0); // พิกัดเริ่มต้น (กรุงเทพฯ)
   LatLng re = LatLng(0, 0); // จุดปลายทาง (ตัวอย่างพิกัด)
@@ -557,6 +562,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
                       setState(() {
                         status = 'ไรเดอร์รับงาน';
                       });
+                      startRealtimeGet();
                       bowljob();
                       // ปิด dialog และไปที่หน้าถัดไป
 
@@ -736,7 +742,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
           sen = LatLng(
               user.senderLat, user.senderLong); // จุดปลายทาง (ตัวอย่างพิกัด)
 
-          mapController.move(sen, mapController.camera.zoom);
+          mapController.move(re, mapController.camera.zoom);
         });
         // log('aaaaaaaa: $receiverId');
       } else {
@@ -795,7 +801,7 @@ class _RiderviewPageState extends State<RiderviewPage> {
           'createAt': DateTime.timestamp()
         };
 
-        db.collection('RealLocation').doc('RiderID: $riderId').set(data);
+        db.collection('RealLocation').doc(riderId).set(data);
         // log('Password changed successfully!');
         // final storage = GetStorage();
         // await storage.write('UserPassword', passCtl.text.toString());
@@ -811,7 +817,13 @@ class _RiderviewPageState extends State<RiderviewPage> {
           const SnackBar(content: Text('Status Changed successfully!')),
         );
       } else if (response.statusCode == 409) {
-        log('Username already exists');
+        // log('Username already exists');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('มีคนรับงานแล้ว'), // ข้อความที่จะแสดง
+            duration: Duration(seconds: 3), // ระยะเวลาที่จะแสดง Snackbar
+          ),
+        );
       } else {
         log('Error: ${response.statusCode} - ${response.body}');
       }
@@ -820,27 +832,128 @@ class _RiderviewPageState extends State<RiderviewPage> {
     }
   }
 
-  // void startRealtimeGet() {
-  //   final docRef = db.collection("RealLocation").doc('riderLocation');
-  //   _subscription = docRef.snapshots().listen(
-  //     (event) {
-  //       var data = event.data();
-  //       Get.snackbar(
-  //           "Data Updated", "Timestamp: ${data!['createAt'].toString()}");
-  //       Get.snackbar(
-  //         "Start Real-Time", // หัวข้อ
-  //         "This is a simple message without a title.", // ข้อความที่ต้องการแสดง
-  //         snackPosition: SnackPosition.BOTTOM, // ตำแหน่งของ snackbar
-  //         duration: Duration(seconds: 3), // ระยะเวลาในการแสดง snackbar
-  //       );
-  //       log("current data: ${event.data()}");
-  //     },
-  //     onError: (error) => log("Listen failed: $error"),
-  //   );
-  // }
+  void startRealtimeGet() {
+    final docRef = db.collection("RealLocation").doc('riderLocation');
+    _subscription = docRef.snapshots().listen(
+      (event) {
+        var data = event.data();
+        Get.snackbar(
+            "Data Updated", "Timestamp: ${data!['createAt'].toString()}");
+        Get.snackbar(
+          "Start Real-Time", // หัวข้อ
+          "This is a simple message without a title.", // ข้อความที่ต้องการแสดง
+          snackPosition: SnackPosition.BOTTOM, // ตำแหน่งของ snackbar
+          duration: Duration(seconds: 5), // ระยะเวลาในการแสดง snackbar
+        );
+        log("current data: ${event.data()}");
+      },
+      onError: (error) => log("Listen failed: $error"),
+    );
+  }
+
+  void startRealtimeLocationUpdates(String riderId) async {
+    try {
+      // Check for location permission first
+      await _checkLocationPermission();
+
+      // Start listening to location changes if permission is granted
+      _listenToLocationChanges(riderId);
+
+      // Start listening to the status in Firestore
+      _listenToStatusChanges(riderId);
+    } catch (e) {
+      log("Error: $e");
+    }
+  }
+
+  // Method to check for location permission
+  Future<void> _checkLocationPermission() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    // Check for location permission
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.deniedForever) {
+        return Future.error(
+            'Location permissions are permanently denied, we cannot request permissions.');
+      }
+
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied.');
+      }
+    }
+  }
+
+  // Method to listen to location changes and update Firestore
+  void _listenToLocationChanges(String riderId) {
+    _positionStream = Geolocator.getPositionStream(
+      locationSettings: LocationSettings(
+        accuracy:
+            LocationAccuracy.high, // Use high accuracy for real-time tracking
+        distanceFilter: 10, // Update when user moves 10 meters
+      ),
+    ).listen((Position position) async {
+      // Log the current position
+      log('Current position: ${position.latitude}, ${position.longitude}');
+
+      // Send location to Firestore, using riderId as document ID
+      final docRef = db.collection("RealLocation").doc(riderId);
+      await docRef.set({
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+        'createAt': FieldValue.serverTimestamp(),
+      });
+
+      // Optionally display the update in the app
+      Get.snackbar(
+        "Location Updated",
+        "Lat: ${position.latitude}, Lng: ${position.longitude}",
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    });
+  }
+
+  // Method to listen to status changes in Firestore
+  void _listenToStatusChanges(String riderId) {
+    final statusDocRef = db
+        .collection("YourCollection")
+        .doc(riderId); // Use riderId to check status
+
+    _statusStream = statusDocRef.snapshots().listen((documentSnapshot) {
+      if (documentSnapshot.exists) {
+        var data = documentSnapshot.data();
+        if (data != null && data['status'] == 'ส่งสำเร็จ') {
+          // If status is 'ส่งสำเร็จ', stop location updates
+          stopRealtimeLocationUpdates();
+          Get.snackbar(
+            "Status Update",
+            "Location updates stopped due to successful send.",
+            snackPosition: SnackPosition.BOTTOM,
+            duration: Duration(seconds: 3),
+          );
+        }
+      }
+    });
+  }
+
+  // Method to stop listening to location changes when no longer needed
+  void stopRealtimeLocationUpdates() {
+    _positionStream?.cancel();
+    _statusStream?.cancel(); // Cancel the status stream as well
+  }
+}
 
   // void stopRealtimeGet() {
   //   _subscription?.cancel(); // ยกเลิกการฟังการเปลี่ยนแปลง
   //   log("Stopped listening to real-time updates.");
   // }
-}
+

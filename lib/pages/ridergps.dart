@@ -17,6 +17,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'location_service.dart';
 
 class RiderGPSPage extends StatefulWidget {
   const RiderGPSPage({super.key});
@@ -39,6 +40,9 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
   LatLng sen = LatLng(0, 0); // พิกัดเริ่มต้น (กรุงเทพฯ)
   LatLng re = LatLng(0, 0); // จุดปลายทาง (ตัวอย่างพิกัด)
   LatLng ri = LatLng(0, 0); // ตัวแปรสำหรับเก็บตำแหน่งปัจจุบัน
+  Map<String, dynamic>? _locationData;
+  final LocationService _locationService = LocationService();
+  Stream<DocumentSnapshot>? _locationStream;
   double riderLat = 0;
   double riderLong = 0;
   String url = '';
@@ -66,6 +70,7 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
   Future<void> _initialize() async {
     await GetApiEndpoint();
     await getUserDataFromStorage();
+    _fetchLocation();
     fetchUsersReceiver();
     fetchUserSender();
     fetchSender();
@@ -97,7 +102,7 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
             Expanded(
               child: SlidingUpPanel(
                 controller: _panelController,
-                maxHeight: 250, // ความสูงสูงสุดตอนดึงขึ้น
+                maxHeight: 300, // ความสูงสูงสุดตอนดึงขึ้น
                 panel: Container(
                   decoration: BoxDecoration(
                       color: Color(0xFF171716), borderRadius: radius),
@@ -133,7 +138,7 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
                                     )
                                     .map((entry) {
                                   final data = entry.value; // ข้อมูล
-                    
+
                                   return Padding(
                                     padding: const EdgeInsets.only(
                                         left: 30, top: 10),
@@ -155,11 +160,9 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
                                               child: Text(
                                                 data.address ??
                                                     'ที่อยู่ไม่ทราบ', // แสดงที่อยู่จากข้อมูล
-                                                style:
-                                                    TextStyle(fontSize: 16),
+                                                style: TextStyle(fontSize: 16),
                                                 softWrap: true,
-                                                overflow:
-                                                    TextOverflow.visible,
+                                                overflow: TextOverflow.visible,
                                               ),
                                             ),
                                           ],
@@ -200,7 +203,7 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
                                       child: Container(
                                         padding: EdgeInsets.symmetric(
                                             vertical: 10,
-                                            horizontal: 20), // ระยะห่างภายใน
+                                            horizontal: 10), // ระยะห่างภายใน
                                         child: Row(
                                           children: [
                                             Icon(Icons.headset_mic,
@@ -287,9 +290,8 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   SizedBox(
-                                      width:
-                                          MediaQuery.of(context).size.width *
-                                              0.2),
+                                      width: MediaQuery.of(context).size.width *
+                                          0.2),
                                   Card(
                                     color: Colors.white,
                                     elevation: 4,
@@ -311,8 +313,7 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
                                                 height: 60.0,
                                                 decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
-                                                    color:
-                                                        Colors.orangeAccent),
+                                                    color: Colors.orangeAccent),
                                                 child: Icon(
                                                   Icons.camera_alt,
                                                   color: Colors.white,
@@ -912,6 +913,14 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
     // setState(() {
     //   status = 'กำลังเดินทาง';
     // });
+    var data = {
+      'latitude': riderLat,
+      'longitude': riderLong,
+      'Status': status,
+      'createAt': DateTime.timestamp()
+    };
+
+    db.collection('RealLocation').doc(riderId).set(data);
 
     try {
       // สร้าง MultipartRequest โดยใช้ $url
@@ -1192,5 +1201,34 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
         );
       },
     );
+  }
+
+  void _fetchLocation() async {
+    if (riderId.isNotEmpty) {
+      // Get the last location
+      final locationData = await _locationService.getLastLocation(riderId);
+
+      // Start listening to real-time updates
+      _locationStream = _locationService.startRealtimeLocationUpdates(riderId);
+      _locationStream?.listen((snapshot) {
+        if (snapshot.exists) {
+          setState(() {
+            _locationData = snapshot.data()
+                as Map<String, dynamic>?; // Update the location data
+          });
+        }
+      });
+
+      // Update the UI with the last location data
+      setState(() {
+        _locationData = locationData; // Update the _locationData
+        ri = LatLng(_locationData!['latitude'], _locationData!['longitude']);
+      });
+    } else {
+      // Handle the case where riderId is not available
+      setState(() {
+        _locationData = null; // Clear or set to null
+      });
+    }
   }
 }

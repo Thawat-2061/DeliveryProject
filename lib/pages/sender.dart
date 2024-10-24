@@ -18,6 +18,7 @@ import 'package:rider/pages/detail.dart';
 import 'package:rider/pages/receiver.dart';
 import 'package:rider/pages/profile.dart';
 import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SenderPage extends StatefulWidget {
   const SenderPage({super.key});
@@ -296,11 +297,18 @@ class _SenderPageState extends State<SenderPage> {
                         rows: SenderGetResponses.isEmpty
                             ? [
                                 DataRow(cells: [
-                                  DataCell(SizedBox(width: 80, child: Text(''))),
-                                  DataCell(SizedBox(width: 40, child: Text(''))),
-                                  DataCell(SizedBox(width: 120, child: Center(child: Text('No products.')))),
-                                  DataCell(SizedBox(width: 40, child: Text(''))),
-                                  DataCell(SizedBox(width: 80, child: Text(''))),
+                                  DataCell(
+                                      SizedBox(width: 80, child: Text(''))),
+                                  DataCell(
+                                      SizedBox(width: 40, child: Text(''))),
+                                  DataCell(SizedBox(
+                                      width: 120,
+                                      child:
+                                          Center(child: Text('No products.')))),
+                                  DataCell(
+                                      SizedBox(width: 40, child: Text(''))),
+                                  DataCell(
+                                      SizedBox(width: 80, child: Text(''))),
                                 ])
                               ]
                             : SenderGetResponses.asMap().entries.map((entry) {

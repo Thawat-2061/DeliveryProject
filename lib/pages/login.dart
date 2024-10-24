@@ -85,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
                               keyboardType: TextInputType.name,
                               decoration: InputDecoration(
                                 labelText:
-                                    "Username or Email", // ข้อความ "Email" ภายใน TextField
+                                    "Username or Phonenumber", // ข้อความ "Email" ภายใน TextField
                                 labelStyle: TextStyle(
                                   color: Colors.white, // สีของข้อความ "Email"
                                 ),

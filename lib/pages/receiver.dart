@@ -16,6 +16,7 @@ import 'package:rider/model/response/SenderGetResponse.dart';
 import 'package:rider/pages/detail.dart';
 import 'package:rider/pages/profile.dart';
 import 'package:rider/pages/sender.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ReceiverPage extends StatefulWidget {
   const ReceiverPage({super.key});

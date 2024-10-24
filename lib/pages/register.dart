@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:flutter/services.dart';
 
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
@@ -285,6 +286,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                       SizedBox(
                                         height: 50,
                                         child: TextField(
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.deny(
+                                                RegExp(r'\s')), // ห้ามช่องว่าง
+                                          ],
                                           controller:
                                               usernameCtl, // เก็บค่าที่กรอกในตัวแปร username
                                           keyboardType: TextInputType.name,
@@ -341,6 +346,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                       SizedBox(
                                         height: 50,
                                         child: TextField(
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.deny(
+                                                RegExp(r'\s')), // ห้ามช่องว่าง
+                                          ],
                                           controller:
                                               phoneCtl, // เก็บค่าที่กรอกในตัวแปร phone
                                           keyboardType: TextInputType.phone,
@@ -406,6 +415,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                                     addressCtl, // เก็บค่าที่กรอกในตัวแปร address
                                                 keyboardType:
                                                     TextInputType.streetAddress,
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter
+                                                      .deny(RegExp(
+                                                          r'\s')), // ห้ามช่องว่าง
+                                                ],
 
                                                 decoration: InputDecoration(
                                                   labelText:
@@ -459,6 +473,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                                   SizedBox(
                                                     height: 50,
                                                     child: TextField(
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter
+                                                            .deny(RegExp(
+                                                                r'\s')), // ห้ามช่องว่าง
+                                                      ],
                                                       controller: positionCtl,
                                                       readOnly:
                                                           true, // Read-only เพื่อให้ผู้ใช้คลิกเลือกตำแหน่งจากแผนที่เท่านั้น
@@ -594,6 +613,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                             SizedBox(
                                               height: 50,
                                               child: TextField(
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter
+                                                      .deny(RegExp(
+                                                          r'\s')), // ห้ามช่องว่าง
+                                                ],
                                                 controller:
                                                     carregCtl, // เก็บค่าที่กรอกในตัวแปร carreg
                                                 keyboardType:
@@ -660,6 +684,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                       SizedBox(
                                         height: 50,
                                         child: TextField(
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.deny(
+                                                RegExp(r'\s')), // ห้ามช่องว่าง
+                                          ],
                                           controller:
                                               emailCtl, // เก็บค่าที่กรอกในตัวแปร email
                                           keyboardType:
@@ -716,6 +744,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                       SizedBox(
                                         height: 50,
                                         child: TextField(
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.deny(
+                                                RegExp(r'\s')), // ห้ามช่องว่าง
+                                          ],
                                           controller:
                                               passCtl, // เก็บค่าที่กรอกในตัวแปร pass
                                           keyboardType:
@@ -773,6 +805,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                       SizedBox(
                                         height: 50,
                                         child: TextField(
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.deny(
+                                                RegExp(r'\s')), // ห้ามช่องว่าง
+                                          ],
                                           controller:
                                               conpassCtl, // เก็บค่าที่กรอกในตัวแปร compass
                                           keyboardType:
