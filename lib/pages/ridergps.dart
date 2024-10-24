@@ -538,18 +538,23 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
                                     .pop(); // ปิด dialog เมื่อกด Confirm
 
                                 // ดำเนินการต่อเมื่อกด Confirm
-                                if (status == '') {
+                                if (status == '' && image != null) {
                                   editOrderImage();
                                   setState(() {
                                     status = 'กำลังเดินทาง';
+                                    image = null;
                                   });
-                                } else if (status == 'กำลังเดินทาง') {
+                                } else if (status == 'กำลังเดินทาง' &&
+                                    image != null) {
                                   editOrderImage();
                                   setState(() {
                                     status = 'ส่งสำเร็จ';
+                                    image = null;
                                   });
+                                } else {
+                                  log('ใส่รูปก่อนยืนยัน');
                                 }
-                                log('Button tapped');
+                                // log('Button tapped');
                               },
                               child: Text('Confirm'),
                             ),
@@ -948,9 +953,6 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
             log("Upload Firebase");
             final storage = GetStorage();
             await storage.write('Image', data['url'].toString() ?? '');
-            if (status == 'ส่งสำเร็จ') {
-              Get.offAll(const RiderPage());
-            }
           }
         } else {
           print('Error: URL not found in response');
@@ -967,6 +969,9 @@ class _RiderGPSPageState extends State<RiderGPSPage> {
 
   void editOrderImage() async {
     await _uploadFile();
+    if (status == 'ส่งสำเร็จ') {
+      Get.offAll(const RiderPage());
+    }
   }
 
   void _showImageOptions(BuildContext context) {

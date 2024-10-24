@@ -159,7 +159,10 @@ class _EditproPageState extends State<EditproPage> {
                                   onChanged: (value) {
                                     // หากต้องการอัปเดตค่า username ขณะพิมพ์
                                     setState(() {
-                                      username = value;
+                                      if (value.isNotEmpty) {
+                                        username = value;
+                                        usernameController.text = username;
+                                      }
                                     });
                                   },
 
@@ -214,7 +217,10 @@ class _EditproPageState extends State<EditproPage> {
                                   onChanged: (value) {
                                     // หากต้องการอัปเดตค่า username ขณะพิมพ์
                                     setState(() {
-                                      phone = value;
+                                      if (value.isNotEmpty) {
+                                        phone = value;
+                                        phoneController.text = phone;
+                                      }
                                     });
                                   },
                                   decoration: InputDecoration(
@@ -269,7 +275,10 @@ class _EditproPageState extends State<EditproPage> {
                                   onChanged: (value) {
                                     // หากต้องการอัปเดตค่า username ขณะพิมพ์
                                     setState(() {
-                                      email = value;
+                                      if (value.isNotEmpty) {
+                                        email = value;
+                                        emailController.text = email;
+                                      }
                                     });
                                   },
                                   decoration: InputDecoration(
@@ -323,7 +332,10 @@ class _EditproPageState extends State<EditproPage> {
                                   onChanged: (value) {
                                     // หากต้องการอัปเดตค่า username ขณะพิมพ์
                                     setState(() {
-                                      address = value;
+                                      if (value.isNotEmpty) {
+                                        address = value;
+                                        addressController.text = address;
+                                      }
                                     });
                                   },
                                   decoration: InputDecoration(
@@ -651,10 +663,11 @@ class _EditproPageState extends State<EditproPage> {
       log("Upload Firebase");
       final storage = GetStorage();
       // await storage.write('Image', data['url'].toString() ?? '');
-      //     await storage.write('Username', ?.toString() ?? '');
-      // await storage.write('Email', user['Email']?.toString() ?? '');
-      // await storage.write('UserPhone', user['Phone']?.toString() ?? '');
-      // await storage.write('Address', user['Address']?.toString() ?? '');
+      await storage.write('Username', usernameController.text.toString());
+      await storage.write('Email', emailController.toString());
+      await storage.write('UserPhone', phoneController.toString());
+      await storage.write('Address', addressController.toString());
+      await getUserDataFromStorage();
       Get.offAll(const ProfilePage());
     }
   }
