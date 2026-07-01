@@ -67,8 +67,7 @@ The system consists of a Flutter mobile application connected to a Node.js RESTf
 ## Technology Stack
 
 ### Mobile
-- Flutter
-- Dart
+- Flutter (Dart)
 
 ### Backend
 - Node.js
@@ -123,12 +122,9 @@ Confirm Delivery
 ## Delivery Status
 
 - Pending
-- Accepted
 - Picked Up
 - In Transit
-- Arrived
 - Delivered
-- Completed
 
 ---
 
@@ -166,7 +162,8 @@ Confirm Delivery
 - Electronic Signature Confirmation
 - Route Optimization
 - In-app Chat
-- Offline Mode
+
+
 
 ---
 
