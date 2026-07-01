@@ -134,29 +134,6 @@ Confirm Delivery
 
 ## Screenshots
 
-### Login
-
-![Login](images/login.png)
-
-### Dashboard
-
-![Dashboard](images/dashboard.png)
-
-### Delivery Request
-
-![Delivery](images/delivery.png)
-
-### Shipment Tracking
-
-![Tracking](images/tracking.png)
-
-### Rider Map
-
-![Map](images/map.png)
-
-### Delivery Confirmation
-
-![Confirmation](images/confirmation.png)
 
 ---
 
