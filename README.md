@@ -147,14 +147,6 @@ Confirm Delivery
 
 ---
 
-## Installation
-
-```bash
-
-```
-
----
-
 ## Future Improvements
 
 - Push Notifications
