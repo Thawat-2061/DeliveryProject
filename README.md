@@ -176,10 +176,7 @@ Confirm Delivery
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/delivery-mobile.git
-cd delivery-mobile
-flutter pub get
-flutter run
+
 ```
 
 ---
