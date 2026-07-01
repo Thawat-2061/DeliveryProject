@@ -75,7 +75,8 @@ The system consists of a Flutter mobile application connected to a Node.js RESTf
 - Express.js
 
 ### Database
-- MongoDB *(Replace if another database was used.)*
+- MySQL
+- Firebase
 
 ### Tools
 - Git
